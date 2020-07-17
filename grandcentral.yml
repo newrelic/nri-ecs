@@ -1,0 +1,12 @@
+project_name: nri-ecs
+team_name: fsi
+slack_channel: fsi-notifications
+deploy_mechanism: none
+require_sidekick_approval: false
+
+test_suites:
+  - name: Unit Tests
+    command: make test
+    environment:
+      dockerfile: |
+        FROM golang:1.14-buster

@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+
+  This template installs the New Relic ECS integration. It stores your license
+  key as a secret, creates the required permissions and registers the
+  newrelic-infra ECS task. To deploy depending on your launch type, continue
+  with the instructions at https://docs.newrelic.com/docs/install-ecs-integration
+
+Resources:
+  NewRelicECSTaskExecutionRoleStack:
+    Type: "AWS::CloudFormation::Stack"
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: "https://nr-downloads-main.s3.amazonaws.com/infrastructure_agent/integrations/ecs/cloudformation/task/execution-role.yaml"
+      Parameters:
+        LicenseKey:
+          Ref: LicenseKey
+
+  NewRelicInfraTaskStack:
+    Type: "AWS::CloudFormation::Stack"
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: "https://nr-downloads-main.s3.amazonaws.com/infrastructure_agent/integrations/ecs/cloudformation/task/task.yaml"
+      Parameters:
+        ExecutionRoleARN: !GetAtt NewRelicECSTaskExecutionRoleStack.Outputs.ExecutionRoleARN
+        LicenseKeySecretARN: !GetAtt NewRelicECSTaskExecutionRoleStack.Outputs.LicenseKeySecretARN
+
+Parameters:
+  LicenseKey:
+    Type: String
+    Description: "New Relic license key. (From the New Relic menu bar, select Account settings.)"

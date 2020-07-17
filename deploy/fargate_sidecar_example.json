@@ -1,0 +1,59 @@
+{
+    "executionRoleArn": "<YOUR_TASK_EXECUTION_ROLE>",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "256",
+    "memory": "512",
+    "containerDefinitions": [
+      {
+        "portMappings": [
+          {
+            "hostPort": 80,
+            "protocol": "tcp",
+            "containerPort": 80
+          }
+        ],
+        "image": "busybox:latest",
+        "name": "busybox"
+      },
+      {
+        "environment": [
+          {
+            "name": "NRIA_OVERRIDE_HOST_ROOT",
+            "value": ""
+          },
+          {
+            "name": "NRIA_IS_FORWARD_ONLY",
+            "value": "true"
+          },
+          {
+            "name": "FARGATE",
+            "value": "true"
+          },
+          {
+            "name": "ENABLE_NRI_ECS",
+            "value": "true"
+          },
+          {
+            "name": "NRIA_PASSTHROUGH_ENVIRONMENT",
+            "value": "ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS,FARGATE"
+          },
+          {
+            "name": "NRIA_CUSTOM_ATTRIBUTES",
+            "value": "{\"nrDeployMethod\":\"downloadPage\"}"
+          }
+        ],
+        "secrets": [
+          {
+            "valueFrom": "<SYSTEM_MANAGER_LICENSE_PARAMETER_NAME>",
+            "name": "NRIA_LICENSE_KEY"
+          }
+        ],
+        "cpu": 256,
+        "memoryReservation": 512,
+        "image": "<INTEGRATION_IMAGE>",
+        "name": "newrelic-infra"
+      }
+    ],
+    "family": "BusyBoxWithNewRelicInfraSidecar"
+  }

@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+
+  This template creates a DAEMON service that runs the New Relic ECS
+  integration in the given cluster. This stack supports only the EC2 launch
+  type, it requires that you have already registerd the newrelic-infra ECS
+  task. Information on how to register the integration or Fargate support
+  can be found at https://docs.newrelic.com/docs/install-ecs-integration
+
+Resources:
+  NewRelicInfraService:
+    Type: "AWS::ECS::Service"
+    Properties:
+      LaunchType: EC2
+      SchedulingStrategy: DAEMON
+      Cluster: !Ref ClusterName
+      ServiceName: "newrelic-infra"
+      TaskDefinition:
+        !Join
+          - ":"
+          - - "newrelic-infra"
+            - !Ref NewRelicInfraTaskVersion
+
+Parameters:
+  ClusterName:
+    Type: String
+    Description: "Cluster name where you want to run the New Relic ECS integration."
+  NewRelicInfraTaskVersion:
+    Type: String
+    Description: >
+      Version of the newrelic-infra task to deploy in the cluster. You can view
+      the versions available in your account at
+      https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions/newrelic-infra/status/ACTIVE

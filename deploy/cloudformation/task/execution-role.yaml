@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+
+  New Relic ECS integration.
+
+  - Creates a secret that stores your license key.
+  - Creates a managed policy that grants access to the license key.
+  - Creates an instance role to be used for the task ExecutionRole.
+
+Resources:
+  NewRelicLicenseKeySecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Description: "New Relic license key."
+      SecretString: !Ref LicenseKey
+
+  NewRelicLicenseKeySecretReadAccess:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "secretsmanager:GetSecretValue"
+            Resource: !Ref NewRelicLicenseKeySecret
+
+  NewRelicECSTaskExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      Description: "ECS task execution role for New Relic infrastructure"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+        - !Ref NewRelicLicenseKeySecretReadAccess
+
+Parameters:
+  LicenseKey:
+    Type: String
+    Description: "New Relic license key. (From the New Relic menu bar, select Account settings.)"
+
+Outputs:
+  ExecutionRoleARN:
+    Description: "ECS Execution Role with New Relic's license secret access"
+    Value: !Ref NewRelicECSTaskExecutionRole
+  LicenseKeySecretARN:
+    Description: "ARN of the license key secret for which the ExecutionRole has read access"
+    Value: !Ref NewRelicLicenseKeySecret

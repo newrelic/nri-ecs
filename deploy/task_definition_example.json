@@ -1,0 +1,76 @@
+{
+  "executionRoleArn": "<YOUR_TASK_EXECUTION_ROLE>",
+  "containerDefinitions": [
+    {
+      "secrets": [
+        {
+          "valueFrom": "<SYSTEM_MANAGER_LICENSE_PARAMETER_NAME>",
+          "name": "NRIA_LICENSE_KEY"
+        }
+      ],
+      "portMappings": [],
+      "cpu": 200,
+      "memory": 384,
+      "environment": [
+        {
+          "name": "NRIA_OVERRIDE_HOST_ROOT",
+          "value": "/host"
+        },
+        {
+          "name": "ENABLE_NRI_ECS",
+          "value": "true"
+        },
+        {
+          "name": "NRIA_PASSTHROUGH_ENVIRONMENT",
+          "value": "ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS"
+        },
+        {
+          "name": "NRIA_VERBOSE",
+          "value": "0"
+        },
+        {
+          "name": "NRIA_CUSTOM_ATTRIBUTES",
+          "value": "{\"nrDeployMethod\":\"downloadPage\"}"
+        }
+      ],
+      "mountPoints": [
+        {
+          "readOnly": true,
+          "containerPath": "/host",
+          "sourceVolume": "host_root_fs"
+        },
+        {
+          "readOnly": false,
+          "containerPath": "/var/run/docker.sock",
+          "sourceVolume": "docker_socket"
+        }
+      ],
+      "volumesFrom": [],
+      "image": "<INTEGRATION_IMAGE>",
+      "essential": true,
+      "readonlyRootFilesystem": false,
+      "privileged": true,
+      "name": "newrelic-infra"
+    }
+  ],
+  "placementConstraints": [],
+  "family": "newrelic-infra",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "networkMode": "host",
+  "volumes": [
+    {
+      "name": "host_root_fs",
+      "host": {
+        "sourcePath": "/"
+      }
+    },
+    {
+      "name": "docker_socket",
+      "host": {
+        "sourcePath": "/var/run/docker.sock"
+      }
+    }
+  ]
+}

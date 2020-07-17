@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: |
+
+  New Relic ECS integration.
+
+  - Registers the New Relic integration task.
+
+Resources:
+    NewRelicInfraTask:
+      Type: "AWS::ECS::TaskDefinition"
+      Properties:
+        Family: "newrelic-infra"
+        RequiresCompatibilities:
+          - EC2
+        NetworkMode: host
+        ExecutionRoleArn: !Ref ExecutionRoleARN
+        Volumes:
+          - Name: host_root_fs
+            Host:
+              SourcePath: "/"
+          - Name: docker_socket
+            Host:
+              SourcePath: "/var/run/docker.sock"
+        ContainerDefinitions:
+          - Secrets:
+            - ValueFrom: !Ref LicenseKeySecretARN
+              Name: NRIA_LICENSE_KEY
+            PortMappings: []
+            Cpu: 200
+            Memory: 384
+            Environment:
+              - Name: NRIA_OVERRIDE_HOST_ROOT
+                Value: "/host"
+              - Name: NRIA_PASSTHROUGH_ENVIRONMENT
+                Value: ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS
+              - Name: ENABLE_NRI_ECS
+                Value: "true"
+              - Name: NRIA_VERBOSE
+                Value: 0
+              - Name: "NRIA_CUSTOM_ATTRIBUTES"
+                Value: '{"nrDeployMethod":"cloudFormation"}'
+            MountPoints:
+              - ReadOnly: true
+                ContainerPath: "/host"
+                SourceVolume: host_root_fs
+              - ReadOnly: false
+                ContainerPath: "/var/run/docker.sock"
+                SourceVolume: docker_socket
+            VolumesFrom: []
+            Image: "<INTEGRATION_IMAGE>"
+            Essential: true
+            ReadonlyRootFilesystem: false
+            Privileged: true
+            Name: "newrelic-infra"
+
+Parameters:
+  ExecutionRoleARN:
+    Type: String
+    Description: "ECS Execution Role with New Relic's license secret access."
+  LicenseKeySecretARN:
+    Type: String
+    Description: "ARN of the license key secret for which the ExecutionRole has read access."
