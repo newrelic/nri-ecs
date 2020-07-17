@@ -11,8 +11,11 @@ import (
 
 func TestClusterARNFromTask(t *testing.T) {
 	taskARN := "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
-	clusterARN := ClusterARNFromTask(taskARN)
+	clusterARN := ClusterARNFromTask(taskARN, "ecs-local-cluster")
 	assert.Equal(t, "arn:aws:ecs:us-west-2:111111111111:cluster/ecs-local-cluster", clusterARN)
+	otherTaskARN := "arn:aws:ecs:eu-west-1:725889879812:task/af32c116-75e0-4f45-aba1-fc2a203ea5d3"
+	otherClusterARN := ClusterARNFromTask(otherTaskARN, "foobar")
+	assert.Equal(t, "arn:aws:ecs:eu-west-1:725889879812:cluster/foobar", otherClusterARN)
 }
 
 func TestResourceNameAndARNBase(t *testing.T) {

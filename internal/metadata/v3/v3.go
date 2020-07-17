@@ -151,12 +151,12 @@ func MetadataV3Endpoint() (string, bool) {
 	return os.LookupEnv(containerMetadataEnvVar)
 }
 
-// ClusterARNFromTask builds a cluster ARN from a task ARN given a cluster name.
-// Example of task ARN: arn:aws:ecs:us-west-2:xxxxxxxx:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152
+// ClusterARNFromTask builds a cluster ARN from a task ARN and a given cluster name.
+// Example of task ARN (EC2): arn:aws:ecs:us-west-2:xxxxxxxx:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152
+// Example of task ARN (Fargate): arn:aws:ecs:us-west-2:xxxxxxxx:task/37e873f6-37b4-42a7-af47-eac7275c6152
 // Example of a cluster ARN: arn:aws:ecs:us-west-2:xxxxxxxx:cluster/test
-func ClusterARNFromTask(taskARN string) string {
-	taskName, arnPrefix := ResourceNameAndARNBase(taskARN)
-	clusterName := strings.Split(taskName, "/")[0]
+func ClusterARNFromTask(taskARN string, clusterName string) string {
+	_, arnPrefix := ResourceNameAndARNBase(taskARN)
 	return fmt.Sprintf("%s:cluster/%s", arnPrefix, clusterName)
 }
 

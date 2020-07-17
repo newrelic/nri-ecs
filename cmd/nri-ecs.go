@@ -45,9 +45,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	clusterARN := v3.ClusterARNFromTask(taskMetadata.TaskARN)
 	awsRegion := v3.AWSRegionFromTask(taskMetadata.TaskARN)
 	clusterName := clusterToClusterName(taskMetadata.Cluster)
+	clusterARN := v3.ClusterARNFromTask(taskMetadata.TaskARN, clusterName)
 
 	clusterEntity, err := ecs.NewClusterEntity(clusterARN, ecsIntegration)
 	if err != nil {

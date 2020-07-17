@@ -10,7 +10,7 @@ import (
 
 const (
 	integrationName    = "com.newrelic.ecs"
-	integrationVersion = "1.0.0"
+	integrationVersion = "1.0.1"
 )
 
 type argumentList struct {

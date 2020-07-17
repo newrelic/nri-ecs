@@ -3,7 +3,7 @@ NATIVEARCH	 := $(shell go version | awk -F '[ /]' '{print $$5}')
 INTEGRATION  := "nri-ecs"
 BINARY_NAME   = $(INTEGRATION)
 GO_PKGS      := $(shell go list ./... | grep -v "/vendor/")
-RELEASE_VERSION := 0.1.0
+RELEASE_VERSION := 1.0.0
 RELEASE_TAG :=
 RELEASE_STRING := ${RELEASE_VERSION}${RELEASE_TAG}
 
@@ -39,9 +39,9 @@ upload_manifests: prepare_manifests
 
 	# newrelic-infra-ecs-ec2-$(RELEASE_STRING).json
 	aws s3 cp $(MANIFEST_DIR)/$(EXAMPLE_TASK_DEFINITION_FILE) \
- 		${S3_ECS_FOLDER}/$(subst <VERSION>,${RELEASE_STRING},${TASK_DEFINITION_FILE_TEMPLATE})
+		${S3_ECS_FOLDER}/$(subst <VERSION>,${RELEASE_STRING},${TASK_DEFINITION_FILE_TEMPLATE})
 
- 	# newrelic-infra-ecs-ec2-latest.json
+	# newrelic-infra-ecs-ec2-latest.json
 	aws s3 cp $(MANIFEST_DIR)/$(EXAMPLE_TASK_DEFINITION_FILE) \
 		${S3_ECS_FOLDER}/$(subst <VERSION>,latest,${TASK_DEFINITION_FILE_TEMPLATE})
 
@@ -51,7 +51,7 @@ upload_manifests: prepare_manifests
 
 	# newrelic-infra-ecs-fargate-example-latest.json
 	aws s3 cp $(MANIFEST_DIR)/$(EXAMPLE_FARGATE_SIDECAR_FILE) \
- 		${S3_ECS_FOLDER}/$(subst <VERSION>,latest,${FARGATE_SIDECAR_FILE_TEMPLATE})
+		${S3_ECS_FOLDER}/$(subst <VERSION>,latest,${FARGATE_SIDECAR_FILE_TEMPLATE})
 
 	# installer shell script
 	aws s3 cp $(MANIFEST_DIR)/$(INSTALLER_SCRIPT_FILE) \
@@ -110,4 +110,7 @@ debug-mode:
 	@docker run -i -t -d --name nri-ecs -v /var/run/docker.sock:/var/run/docker.sock fsi/nri-ecs:debug
 	@docker exec -it nri-ecs sh
 
-.PHONY: all build clean compile test
+buildThirdPartyNotice:
+	@go list -m -json all | go-licence-detector -noticeOut=NOTICE.txt -rules ./assets/licence/rules.json  -noticeTemplate ./assets/licence/THIRD_PARTY_NOTICES.md.tmpl -noticeOut THIRD_PARTY_NOTICES.md -overrides ./assets/licence/overrides -includeIndirect
+
+.PHONY: all build clean compile test buildLicenseNotice
