@@ -73,7 +73,7 @@ practices. Like all official New Relic open source projects, there's a related
 Community topic in the New Relic Explorers Hub. You can find this project's
 topic/threads here:
 
->Add the url for the support thread here
+https://discuss.newrelic.com/t/new-relic-ecs-integration/109092
 
 ## Contributing
 Full details about how to contribute to
