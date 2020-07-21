@@ -1,23 +1,33 @@
 [![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)
 
-# New Relic integration for ECS
+# New Relic integration for Amazon ECS
 
-This integration collects metrics from ECS clusters and containers.
+This integration collects metrics from ECS clusters and containers in AWS.
 
 By itself, this integration just collects metadata of the ECS cluster, the
 real value comes when combined with the [nri-docker][1] integration. The
-recomended approach is to run the [infrastructre-bundle][3] which includes the
+recomended approach is to run the [infrastructure-bundle][3] which includes the
 infrastructure agent and both integrations.
+
+## Table of contents
+
+- [Table of contents](#table-of-contents)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Building](#building)
+- [Support](#support)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Requirements
 
 - Go 1.13
-- ECS agent >= 1.21.
+- ECS agent version 1.21 or greater.
 
 ## Installation
 
-Create a task definition that runs the [infrastructre-bundle][3] in your ECS
-cluster. In our [official New Relic docs][2] you can find information on how to
+Create a task definition that runs the [infrastructure-bundle][3] in your ECS
+cluster. In our [docs][2] you can find information on how to
 set up your infrastructure automatically with CloudFormation, or generating the
 task definition via command line or manually.
 
@@ -56,14 +66,6 @@ $ go test -race -run /A=1    # For all top-level tests, run subtests matching "A
 ```
 
 For more information, see [Testing][4] in the official Go docs.
-
-## Releasing
-
-1. Release new version of nri-ecs binary to the downloads page.
-1. Update the version of nri-ecs in the [infrastructre-bundle repo][3].
-1. Release a new version of `infrastructre-bundle`.
-1. Update the image version of `infrastructre-bundle` in the the tasks
-  definitions.
 
 ## Support
 
