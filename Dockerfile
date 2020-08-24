@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=newrelic/infrastructure-bundle
-ARG BASE_IMAGE_TAG=1.3.1
+ARG BASE_IMAGE_TAG=1.5.0
 ARG GO_VERSION=1.13.8
 
 FROM golang:${GO_VERSION}-alpine AS build
@@ -25,4 +25,3 @@ ENV NRIA_PASSTHROUGH_ENVIRONMENT=ECS_CONTAINER_METADATA_URI,FARGATE
 ENV NRIA_IS_SECURE_FORWARD_ONLY=true
 COPY --from=build /go/src/source.datanerd.us/fsi/nri-ecs/newrelic-nri-docker-config-fargate.yml /etc/newrelic-infra/integrations.d/docker-config.yml
 ENV FARGATE=true
-
