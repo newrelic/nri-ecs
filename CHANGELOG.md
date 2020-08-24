@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 1.1.0 - 2020-08-17
 - Update to infrastructure-bundle 1.5.0
+- Change the env var options from `IS_FORWARD_ONLY` to `IS_SECURE_FORWARD_ONLY`
 
 ## 1.0.1 - 2020-07-17
 - Fix an issue that made the integration generate incorrect cluster ARNs from

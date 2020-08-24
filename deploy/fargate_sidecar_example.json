@@ -23,7 +23,7 @@
             "value": ""
           },
           {
-            "name": "NRIA_IS_FORWARD_ONLY",
+            "name": "NRIA_IS_SECURE_FORWARD_ONLY",
             "value": "true"
           },
           {
