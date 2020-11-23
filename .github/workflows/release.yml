@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
+      INFRA_BUNDLE_VERSION: 1.5.0
       OS: linux
       ARCH: amd64
     steps:
