@@ -29,7 +29,7 @@ EXAMPLE_TASK_DEFINITION_FILE := task_definition_example.json
 FARGATE_SIDECAR_FILE_TEMPLATE := newrelic-infra-ecs-fargate-example-<VERSION>.json
 EXAMPLE_FARGATE_SIDECAR_FILE := fargate_sidecar_example.json
 
-S3_BASE_FOLDER := s3://nr-downloads-main/infrastructure_agent
+S3_BASE_FOLDER ?= s3://nr-downloads-main/infrastructure_agent
 S3_ECS_FOLDER := $(S3_BASE_FOLDER)/integrations/ecs
 S3_CLOUDFORMATION_FOLDER := $(S3_ECS_FOLDER)/cloudformation
 S3_TARBALL_FOLDER := $(S3_BASE_FOLDER)/binaries/$(OS)/$(ARCH)
