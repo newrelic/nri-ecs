@@ -30,7 +30,7 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Build container image
+      - name: Build tarball
         run: |
           make test
           make package_for OS=$OS ARCH=$ARCH RELEASE_VERSION=$RELEASE_VERSION

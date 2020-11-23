@@ -1,6 +1,6 @@
 NATIVEOS	 := $(shell go version | awk -F '[ /]' '{print $$4}')
 NATIVEARCH	 := $(shell go version | awk -F '[ /]' '{print $$5}')
-INTEGRATION  := "nri-ecs"
+INTEGRATION  := nri-ecs
 BINARY_NAME   = $(INTEGRATION)
 GO_PKGS      := $(shell go list ./... | grep -v "/vendor/")
 RELEASE_VERSION := 1.0.0
@@ -89,7 +89,8 @@ compile_for:
 
 package_for: compile_for
 	@echo "=== $(INTEGRATION) === [ package ]: Packaging..."
-	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/{newrelic-integrations/bin,integrations.d}
+	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin
+	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d
 	mkdir -p $(TARBALL_DIR)
 	cp ./bin/$(INTEGRATION) $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin/$(INTEGRATION)
 	cp newrelic-nri-ecs-config.yml $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d/nri-ecs-config.yml
