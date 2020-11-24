@@ -43,4 +43,4 @@ jobs:
       - name: Upload tarball and configuration files to https://download.newrelic.com
         run: |
           make release_tarball_package_for OS=$OS ARCH=$ARCH RELEASE_VERSION=$RELEASE_VERSION
-          make upload_manifests RELEASE_VERSION=$RELEASE_VERSION INFRA_BUNDLE_VERSION=$INFRA_BUNDLE_VERSION
+          make upload_manifests RELEASE_VERSION=$RELEASE_VERSION
