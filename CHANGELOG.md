@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 TODO: Fix date
-## 1.1.1 - 2020-11-XX
+## 1.2.0 - 2020-11-25
 - Update to infrastructure-bundle 1.6.0
 
 ## 1.1.0 - 2020-08-17
