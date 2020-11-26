@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=newrelic/infrastructure-bundle
-ARG BASE_IMAGE_TAG=1.5.0
+ARG BASE_IMAGE_TAG=1.6.0
 ARG GO_VERSION=1.13.8
 
 FROM golang:${GO_VERSION}-alpine AS build
