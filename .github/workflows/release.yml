@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  release:
+    types: [prereleased, released]
+
+jobs:
+  release-s3:
+    name: Release tarball & config
+    runs-on: ubuntu-latest
+    env:
+      S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
+      OS: linux
+      ARCH: amd64
+    steps:
+      - name: Generate version from tag
+        run: |
+          RELEASE_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
+      - name: Validate tag and release version
+        run: |
+          echo "${{ github.event.release.tag_name }}" | grep -E '^v[0-9.]*[0-9]$'
+          echo "$RELEASE_VERSION" | grep -E '^[0-9.]*[0-9]$'
+
+      - if: ${{ github.event.release.prerelease }}
+        run: |
+          echo "RELEASE_VERSION=$RELEASE_VERSION-pre" >> $GITHUB_ENV
+          echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v2
+
+      - name: Build tarball
+        run: |
+          make test
+          make package_for OS=$OS ARCH=$ARCH RELEASE_VERSION=$RELEASE_VERSION
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Upload tarball and configuration files to https://download.newrelic.com
+        run: |
+          make release_tarball_package_for OS=$OS ARCH=$ARCH RELEASE_VERSION=$RELEASE_VERSION
+          make upload_manifests RELEASE_VERSION=$RELEASE_VERSION

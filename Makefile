@@ -1,6 +1,6 @@
 NATIVEOS	 := $(shell go version | awk -F '[ /]' '{print $$4}')
 NATIVEARCH	 := $(shell go version | awk -F '[ /]' '{print $$5}')
-INTEGRATION  := "nri-ecs"
+INTEGRATION  := nri-ecs
 BINARY_NAME   = $(INTEGRATION)
 GO_PKGS      := $(shell go list ./... | grep -v "/vendor/")
 RELEASE_VERSION := 1.0.0
@@ -29,7 +29,7 @@ EXAMPLE_TASK_DEFINITION_FILE := task_definition_example.json
 FARGATE_SIDECAR_FILE_TEMPLATE := newrelic-infra-ecs-fargate-example-<VERSION>.json
 EXAMPLE_FARGATE_SIDECAR_FILE := fargate_sidecar_example.json
 
-S3_BASE_FOLDER := s3://nr-downloads-main/infrastructure_agent
+S3_BASE_FOLDER ?= s3://nr-downloads-main/infrastructure_agent
 S3_ECS_FOLDER := $(S3_BASE_FOLDER)/integrations/ecs
 S3_CLOUDFORMATION_FOLDER := $(S3_ECS_FOLDER)/cloudformation
 S3_TARBALL_FOLDER := $(S3_BASE_FOLDER)/binaries/$(OS)/$(ARCH)
@@ -89,7 +89,8 @@ compile_for:
 
 package_for: compile_for
 	@echo "=== $(INTEGRATION) === [ package ]: Packaging..."
-	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/{newrelic-integrations/bin,integrations.d}
+	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin
+	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d
 	mkdir -p $(TARBALL_DIR)
 	cp ./bin/$(INTEGRATION) $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin/$(INTEGRATION)
 	cp newrelic-nri-ecs-config.yml $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d/nri-ecs-config.yml
