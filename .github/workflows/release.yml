@@ -29,7 +29,6 @@ jobs:
 
       - if: ${{ github.event.release.prerelease }}
         run: |
-          echo "RELEASE_VERSION=$RELEASE_VERSION-pre" >> $GITHUB_ENV
           echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
 
       - uses: actions/checkout@v2
@@ -67,7 +66,6 @@ jobs:
 
       - if: ${{ github.event.release.prerelease }}
         run: |
-          echo "RELEASE_VERSION=$RELEASE_VERSION-pre" >> $GITHUB_ENV
           echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
 
       - uses: actions/checkout@v2
