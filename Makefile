@@ -7,7 +7,7 @@ RELEASE_VERSION := 1.0.0
 RELEASE_TAG :=
 RELEASE_STRING := ${RELEASE_VERSION}${RELEASE_TAG}
 
-INFRA_BUNDLE_VERSION := 2.1.2
+INFRA_BUNDLE_VERSION := 2.2.3
 INFRA_BUNDLE_IMAGE := newrelic/infrastructure-bundle:$(INFRA_BUNDLE_VERSION)
 
 # compile & package targets
@@ -99,6 +99,7 @@ package_for: compile_for
 release_tarball_package_for: package_for
 	@echo "=== $(INTEGRATION) === [ package ]: Releasing..."
 	aws s3 cp $(TARBALL_DIR)/$(FILENAME_TARBALL) ${S3_TARBALL_FOLDER}/$(FILENAME_TARBALL)
+	gh release upload "v$(RELEASE_VERSION)" "$(TARBALL_DIR)/$(FILENAME_TARBALL)" --repo "github.com/newrelic/nri-ecs" --clobber
 
 test:
 	@echo "=== $(INTEGRATION) === [ test ]: Running unit tests..."
