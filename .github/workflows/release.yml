@@ -15,6 +15,7 @@ jobs:
       S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
       OS: linux
       ARCH: ${{ matrix.goarch }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Generate version from tag
         run: |

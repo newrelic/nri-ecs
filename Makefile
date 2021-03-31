@@ -99,7 +99,7 @@ package_for: compile_for
 release_tarball_package_for: package_for
 	@echo "=== $(INTEGRATION) === [ package ]: Releasing..."
 	aws s3 cp $(TARBALL_DIR)/$(FILENAME_TARBALL) ${S3_TARBALL_FOLDER}/$(FILENAME_TARBALL)
-	gh release upload "v$RELEASE_VERSION" "$(TARBALL_DIR)/$(FILENAME_TARBALL)" --repo "github.com/newrelic/nri-ecs" --clobber
+	gh release upload "v$(RELEASE_VERSION)" "$(TARBALL_DIR)/$(FILENAME_TARBALL)" --repo "github.com/newrelic/nri-ecs" --clobber
 
 test:
 	@echo "=== $(INTEGRATION) === [ test ]: Running unit tests..."
