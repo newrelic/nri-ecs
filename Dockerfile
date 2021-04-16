@@ -1,7 +1,7 @@
 #### Please note that this dockerfile is not used to release the image,
 #### It is used merely to create a test image to run tests or to be uploaded manually for testing pourpuses
 ARG BASE_IMAGE=newrelic/infrastructure-bundle
-ARG BASE_IMAGE_TAG=2.4.0
+ARG BASE_IMAGE_TAG=2.4.1
 ARG GO_VERSION=1.13.8
 
 FROM golang:${GO_VERSION}-alpine AS build
