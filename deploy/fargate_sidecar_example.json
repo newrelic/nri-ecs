@@ -14,7 +14,7 @@
           }
         ],
         "image": "busybox:latest",
-        "name": "busybox"
+        "name": "placeholder-your-app-goes-here"
       },
       {
         "environment": [
@@ -37,10 +37,6 @@
           {
             "name": "NRIA_PASSTHROUGH_ENVIRONMENT",
             "value": "ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS,FARGATE"
-          },
-          {
-            "name": "NRIA_CUSTOM_ATTRIBUTES",
-            "value": "{\"nrDeployMethod\":\"downloadPage\"}"
           }
         ],
         "secrets": [
