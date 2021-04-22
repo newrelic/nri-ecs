@@ -13,7 +13,7 @@ require (
 	github.com/newrelic/infra-integrations-sdk v3.0.2+incompatible
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
