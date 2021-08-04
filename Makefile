@@ -3,11 +3,11 @@ NATIVEARCH	 := $(shell go version | awk -F '[ /]' '{print $$5}')
 INTEGRATION  := nri-ecs
 BINARY_NAME   = $(INTEGRATION)
 GO_PKGS      := $(shell go list ./... | grep -v "/vendor/")
-RELEASE_VERSION := 1.0.0
+RELEASE_VERSION ?= "dev" # Populated by release packages or manifest workflows.
 RELEASE_TAG :=
 RELEASE_STRING := ${RELEASE_VERSION}${RELEASE_TAG}
 
-INFRA_BUNDLE_VERSION := 2.4.1
+INFRA_BUNDLE_VERSION ?= "dev" # Populated by release manifest workflow.
 INFRA_BUNDLE_IMAGE := newrelic/infrastructure-bundle:$(INFRA_BUNDLE_VERSION)
 
 # compile & package targets
