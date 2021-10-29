@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"source.datanerd.us/fsi/nri-ecs/pkg/ecs"
+	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
 const taskResponseJSONFile = "testdata/task_response.json"

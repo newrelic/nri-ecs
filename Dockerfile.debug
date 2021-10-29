@@ -3,7 +3,7 @@
 FROM golang:1.13.8-alpine AS build
 RUN apk add --no-cache --update git make
 
-WORKDIR /go/src/source.datanerd.us/fsi/nri-ecs
+WORKDIR /go/src/github.com/newrelic/nri-ecs
 COPY Makefile Makefile
 # Trick to reuse the cache in case vendor.json doesn't change.
 COPY vendor vendor
@@ -13,6 +13,6 @@ RUN make compile-only
 
 FROM amazon/amazon-ecs-local-container-endpoints
 
-COPY --from=build /go/src/source.datanerd.us/fsi/nri-ecs/bin/nri-ecs /bin/
+COPY --from=build /go/src/github.com/newrelic/nri-ecs/bin/nri-ecs /bin/
 ENV ECS_CONTAINER_METADATA_URI="http://localhost/v3"
 

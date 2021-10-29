@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	v3 "source.datanerd.us/fsi/nri-ecs/internal/metadata/v3"
-	"source.datanerd.us/fsi/nri-ecs/pkg/ecs"
+	v3 "github.com/newrelic/nri-ecs/internal/metadata/v3"
+	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
 func main() {

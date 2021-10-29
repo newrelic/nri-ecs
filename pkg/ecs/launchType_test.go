@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"source.datanerd.us/fsi/nri-ecs/pkg/ecs"
+
+	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
 func TestNewFargateLaunchType(t *testing.T) {

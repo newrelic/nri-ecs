@@ -1,4 +1,4 @@
-module source.datanerd.us/fsi/nri-ecs
+module github.com/newrelic/nri-ecs
 
 go 1.13
 

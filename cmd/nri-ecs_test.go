@@ -10,7 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"source.datanerd.us/fsi/nri-ecs/cmd/testdata"
+
+	"github.com/newrelic/nri-ecs/cmd/testdata"
 )
 
 func TestIsEcsARN(t *testing.T) {
