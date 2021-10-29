@@ -6,17 +6,35 @@ import (
 	"strings"
 	"time"
 
+	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
+	"github.com/newrelic/infra-integrations-sdk/integration"
+	"github.com/newrelic/infra-integrations-sdk/log"
+
 	v3 "github.com/newrelic/nri-ecs/internal/metadata/v3"
 	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
+var (
+	integrationName    = "com.newrelic.ecs"
+	integrationVersion = "1.2.0"
+)
+
+type argumentList struct {
+	sdkArgs.DefaultArgumentList
+	DebugMode bool `default:"false" help:"Enable ECS Agent Metadata debug mode."`
+	Fargate   bool `default:"false" help:"If running on fargate"`
+}
+
 func main() {
-	ecsIntegration, err := ecs.NewIntegration(&ecs.Args)
+	args := &argumentList{}
+
+	ecsIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(args))
 	if err != nil {
-		panic(err)
+		log.Error("failed to create integration: %w", err)
+		os.Exit(1)
 	}
 
-	if ecs.Args.DebugMode {
+	if args.DebugMode {
 		v3.DebugECSEndpoint()
 		os.Exit(0)
 	}
@@ -65,7 +83,7 @@ func main() {
 		ecsIntegration.Logger().Errorf("unable to create metrics for cluster: %v", err)
 	}
 
-	launchType := ecs.NewLaunchType(ecs.Args.Fargate)
+	launchType := ecs.NewLaunchType(args.Fargate)
 	err = ecs.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration)
 
 	if err != nil {
