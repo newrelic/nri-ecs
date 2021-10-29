@@ -2,7 +2,7 @@
 #### It is used merely to create a test image to run tests or to be uploaded manually for testing pourpuses
 ARG BASE_IMAGE=newrelic/infrastructure-bundle
 ARG BASE_IMAGE_TAG=2.6.4
-ARG GO_VERSION=1.13.8
+ARG GO_VERSION=1.17
 
 FROM golang:${GO_VERSION}-alpine AS build
 RUN apk add --no-cache --update git make

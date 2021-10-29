@@ -18,7 +18,7 @@ By itself, this integration just collects metadata of the ECS cluster, the real 
 
 ## Requirements
 
-- Go 1.13
+- Go 1.17
 - ECS agent version 1.21 or greater.
 
 ## Installation
