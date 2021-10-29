@@ -5,13 +5,14 @@ package testdata
 var IntegrationOutput string = `
 {
 	"name":                "com.newrelic.ecs",
-	"protocol_version":    "2",
+	"protocol_version":    "3",
 	"integration_version": "1.3.1",
 	"data": [
 		{
 			"entity": {
 				"name": "cluster/ecs-local-cluster",
-				"type": "arn:aws:ecs:us-west-2:111111111111"
+				"type": "arn:aws:ecs:us-west-2:111111111111",
+				"id_attributes":[]
 			},
 			"metrics": [
 				{

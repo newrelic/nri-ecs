@@ -14,7 +14,7 @@ require (
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/newrelic/infra-integrations-sdk v3.0.2+incompatible
+	github.com/newrelic/infra-integrations-sdk v3.7.0+incompatible
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.8.1
