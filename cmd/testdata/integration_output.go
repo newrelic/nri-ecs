@@ -6,7 +6,7 @@ var IntegrationOutput string = `
 {
 	"name":                "com.newrelic.ecs",
 	"protocol_version":    "2",
-	"integration_version": "1.2.0",
+	"integration_version": "1.3.1",
 	"data": [
 		{
 			"entity": {
