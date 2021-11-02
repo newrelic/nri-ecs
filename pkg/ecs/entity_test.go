@@ -1,62 +1,28 @@
 package ecs_test
 
 import (
-	"runtime"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/data/inventory"
+	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"source.datanerd.us/fsi/nri-ecs/pkg/ecs"
+	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
-const taskResponseJSONFile = "testdata/task_response.json"
-
-/*
-
-	Be aware, the tests in this package will not work when using Go version 1.11 or above.
-	The integrations SDK parses flags, and the testing framework does so as well...
-
-	To run these tests, please use go 1.11:
-
-	brew install go@1.11
-	/usr/local/opt/go@1.11/bin/go test ./...
-*/
-
-// skipIfGoVersionIsAbove11 does some things we can better not talk about
-func skipIfGoVersionIsAbove11(t *testing.T) {
-
-	// version looks like go1.13.7 or go1.13
-	versions := strings.Split(runtime.Version(), ".")
-	major, err := strconv.Atoi(versions[1])
-	if err != nil {
-		return
-	}
-
-	if major > 11   {
-		t.Skip("Warning! Skipping test because go version is not compatible (requires go version <= 11)")
-	}
-}
-
 func TestNewClusterEntity(t *testing.T) {
-	skipIfGoVersionIsAbove11(t)
-
-	integration, _ := ecs.NewIntegration(&ecs.Args)
-	cluster, err := ecs.NewClusterEntity("arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster", integration)
+	i, _ := integration.New("test", "dev")
+	cluster, err := ecs.NewClusterEntity("arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster", i)
 	assert.NoError(t, err)
 	assert.Equal(t, "cluster/ecs-local-cluster", cluster.Metadata.Name)
 	assert.Equal(t, "arn:aws:ecs:us-west-2:xxxxxxxx", cluster.Metadata.Namespace)
 }
 
 func TestAddClusterInventory(t *testing.T) {
-	skipIfGoVersionIsAbove11(t)
+	i, _ := integration.New("test", "dev")
 
-	integration, _ := ecs.NewIntegration(&ecs.Args)
-
-	entity, err := integration.Entity("foo", "bar")
+	entity, err := i.Entity("foo", "bar")
 	assert.NoError(t, err)
 
 	err = ecs.AddClusterInventory("clusterName", "clusterARN", entity)
@@ -65,13 +31,11 @@ func TestAddClusterInventory(t *testing.T) {
 	item, ok := entity.Inventory.Item("cluster")
 	assert.True(t, ok, "inventory not found")
 	assert.Equal(t, "clusterName", item["name"])
-	assert.Equal(t, "clusterARN", item["name"])
+	assert.Equal(t, "clusterARN", item["arn"])
 }
 
 func TestAddClusterInventoryToLocalEntity(t *testing.T) {
-	skipIfGoVersionIsAbove11(t)
-
-	i, _ := ecs.NewIntegration(&ecs.Args)
+	i, _ := integration.New("test", "dev")
 
 	ecsClusterName := "my-cluster"
 	ecsClusterARN := "arn:my-cluster"
@@ -96,9 +60,7 @@ func TestAddClusterInventoryToLocalEntity(t *testing.T) {
 }
 
 func TestNewClusterHeartbeatMetricSet(t *testing.T) {
-	skipIfGoVersionIsAbove11(t)
-
-	integration, _ := ecs.NewIntegration(&ecs.Args)
+	integration, _ := integration.New("test", "dev")
 
 	entity, err := integration.Entity("foo", "bar")
 	assert.NoError(t, err)
