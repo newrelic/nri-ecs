@@ -34,11 +34,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if args.DebugMode {
-		v3.DebugECSEndpoint()
-		os.Exit(0)
-	}
-
 	httpClient := ecs.ClientWithTimeout(5 * time.Second)
 
 	taskMetadataEnpoint, found := v3.TaskMetadataEndpoint()
@@ -55,6 +50,11 @@ func main() {
 			err,
 		)
 		os.Exit(1)
+	}
+
+	if args.DebugMode {
+		log.Info("task metadata json response: %s", string(body))
+		os.Exit(0)
 	}
 
 	var taskMetadata v3.TaskResponse

@@ -28,11 +28,6 @@ const (
 	durationBetweenRetries  = time.Second
 )
 
-var isAWSVPCNetworkMode bool
-var isBridgeNetworkMode bool
-var checkContainerInstanceTags bool
-var networkModes map[string]bool
-
 // TaskResponse defines the schema for the task response JSON object
 type TaskResponse struct {
 	Cluster            string              `json:"Cluster"`
@@ -138,16 +133,16 @@ func metadataResponse(client *http.Client, endpoint string) ([]byte, error) {
 
 // TaskMetadataEndpoint returns the V3 endpoint to fetch task metadata.
 func TaskMetadataEndpoint() (string, bool) {
-	baseEndpoint, found := MetadataV3Endpoint()
+	baseEndpoint, found := metadataV3Endpoint()
 	if !found {
 		return "", found
 	}
 	return baseEndpoint + "/task", found
 }
 
-// MetadataV3Endpoint returns the v3 metadata endpoint configured via the ECS_CONTAINER_METADATA_URI environment
+// metadataV3Endpoint returns the v3 metadata endpoint configured via the ECS_CONTAINER_METADATA_URI environment
 // variable.
-func MetadataV3Endpoint() (string, bool) {
+func metadataV3Endpoint() (string, bool) {
 	return os.LookupEnv(containerMetadataEnvVar)
 }
 
