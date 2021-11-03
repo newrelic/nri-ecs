@@ -1,4 +1,4 @@
-package v3
+package metadata
 
 // Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
@@ -27,11 +27,6 @@ const (
 	maxRetries              = 4
 	durationBetweenRetries  = time.Second
 )
-
-var isAWSVPCNetworkMode bool
-var isBridgeNetworkMode bool
-var checkContainerInstanceTags bool
-var networkModes map[string]bool
 
 // TaskResponse defines the schema for the task response JSON object
 type TaskResponse struct {
@@ -138,16 +133,16 @@ func metadataResponse(client *http.Client, endpoint string) ([]byte, error) {
 
 // TaskMetadataEndpoint returns the V3 endpoint to fetch task metadata.
 func TaskMetadataEndpoint() (string, bool) {
-	baseEndpoint, found := MetadataV3Endpoint()
+	baseEndpoint, found := metadataV3Endpoint()
 	if !found {
 		return "", found
 	}
 	return baseEndpoint + "/task", found
 }
 
-// MetadataV3Endpoint returns the v3 metadata endpoint configured via the ECS_CONTAINER_METADATA_URI environment
+// metadataV3Endpoint returns the v3 metadata endpoint configured via the ECS_CONTAINER_METADATA_URI environment
 // variable.
-func MetadataV3Endpoint() (string, bool) {
+func metadataV3Endpoint() (string, bool) {
 	return os.LookupEnv(containerMetadataEnvVar)
 }
 
@@ -174,4 +169,31 @@ func ResourceNameAndARNBase(resourceARN string) (resourceName string, arnPrefix 
 	arnPrefix = arnPrefixAndType[:strings.LastIndex(arnPrefixAndType, ":")]
 	resourceName = resourceARN[strings.Index(resourceARN, "/")+1:]
 	return resourceName, arnPrefix
+}
+
+// ClusterToClusterName will convert the given cluster string returned by the V3 metadata endpoint to the cluster name.
+// This is needed, because the Task v3 metadata endpoint returns different Cluster strings for Fargate and EC2:
+// Fargate: Cluster is the ClusterARN
+// EC2: Cluster is the ClusterName
+func ClusterToClusterName(cluster string) string {
+	if !isECSARN(cluster) {
+		return cluster
+	}
+	clusterName, _ := ResourceNameAndARNBase(cluster)
+	if clusterName == "" {
+		return cluster
+	}
+
+	return clusterName
+}
+
+// isARN returns whether the given string is an ECS ARN by looking for
+// whether the string starts with "arn:aws:ecs" and contains the correct number
+// of sections delimited by colons(:).
+// Copied from: https://github.com/aws/aws-sdk-go/blob/81abf80dec07700b14a91ece14b8eca6c5e6b4f8/aws/arn/arn.go#L81
+func isECSARN(arn string) bool {
+	const arnPrefix = "arn:aws:ecs"
+	const arnSections = 6
+
+	return strings.HasPrefix(arn, arnPrefix) && strings.Count(arn, ":") >= arnSections-1
 }

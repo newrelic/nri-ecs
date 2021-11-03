@@ -14,43 +14,6 @@ import (
 	"github.com/newrelic/nri-ecs/cmd/testdata"
 )
 
-func TestIsEcsARN(t *testing.T) {
-	tt := []struct {
-		testEcsARN string
-		isEcsARN   bool
-	}{
-		// invalid cases
-		{"", false},
-		{"hello world", false},
-		{"arn:aws:iam::123456789012:user/Development/product_1234/askdk", false}, // not an ECS arn
-		{"arn:aws:ecs:eu-south-1337:cluster/fsi", false},                         // missing account number
-		// valid cases
-		{"arn:aws:ecs:eu-west-2:123456789012:cluster/test", true},
-		{"arn:aws:ecs:eu-south-1337:1:cluster/my_awesome_long_cluster_name_which_nobody_ever_used_before", true},
-	}
-
-	for _, testCase := range tt {
-		isValidECSArn := isECSARN(testCase.testEcsARN)
-		assert.Equal(t, testCase.isEcsARN, isValidECSArn, "expected valid ARN=%t, got=%t, arn=%s", testCase.isEcsARN, isValidECSArn, testCase.testEcsARN)
-	}
-}
-
-func TestClusterToClusterName(t *testing.T) {
-	tt := []struct {
-		cluster, expectedClusterName string
-	}{
-		{"my-cluster", "my-cluster"},
-		{"arn:aws:ecs:eu-south-1337:1:cluster/my_awesome_long_cluster_name_which_nobody_ever_used_before", "my_awesome_long_cluster_name_which_nobody_ever_used_before"},
-		{"arn:aws:ecs:eu-south-1337:1:cluster/x", "x"},
-		{"arn:aws:ecs:eu-south-1337:1:cluster/", "arn:aws:ecs:eu-south-1337:1:cluster/"},
-	}
-
-	for _, testCase := range tt {
-		clusterName := clusterToClusterName(testCase.cluster)
-		assert.Equal(t, testCase.expectedClusterName, clusterName)
-	}
-}
-
 func TestIntegrationPublish(t *testing.T) {
 	clusterName := "ecs-local-cluster"
 	// Mock the metadata endpoint

@@ -1,4 +1,4 @@
-package ecs_test
+package infra_test
 
 import (
 	"testing"
@@ -8,12 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/nri-ecs/pkg/ecs"
+	"github.com/newrelic/nri-ecs/internal/ecs"
+	"github.com/newrelic/nri-ecs/internal/infra"
 )
 
 func TestNewClusterEntity(t *testing.T) {
 	i, _ := integration.New("test", "dev")
-	cluster, err := ecs.NewClusterEntity("arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster", i)
+	cluster, err := infra.NewClusterEntity("arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster", i)
 	assert.NoError(t, err)
 	assert.Equal(t, "cluster/ecs-local-cluster", cluster.Metadata.Name)
 	assert.Equal(t, "arn:aws:ecs:us-west-2:xxxxxxxx", cluster.Metadata.Namespace)
@@ -25,7 +26,7 @@ func TestAddClusterInventory(t *testing.T) {
 	entity, err := i.Entity("foo", "bar")
 	assert.NoError(t, err)
 
-	err = ecs.AddClusterInventory("clusterName", "clusterARN", entity)
+	err = infra.AddClusterInventory("clusterName", "clusterARN", entity)
 	assert.NoError(t, err)
 
 	item, ok := entity.Inventory.Item("cluster")
@@ -42,7 +43,7 @@ func TestAddClusterInventoryToLocalEntity(t *testing.T) {
 	awsRegion := "us-east-1"
 	launchType := ecs.NewLaunchType(true)
 
-	err := ecs.AddClusterInventoryToLocalEntity(ecsClusterName, ecsClusterARN, awsRegion, launchType, i)
+	err := infra.AddClusterInventoryToLocalEntity(ecsClusterName, ecsClusterARN, awsRegion, launchType, i)
 	require.NoError(t, err)
 
 	e := i.LocalEntity()
@@ -65,7 +66,7 @@ func TestNewClusterHeartbeatMetricSet(t *testing.T) {
 	entity, err := integration.Entity("foo", "bar")
 	assert.NoError(t, err)
 
-	metricSet, err := ecs.NewClusterHeartbeatMetricSet(
+	metricSet, err := infra.NewClusterHeartbeatMetricSet(
 		"ecs-local-cluster",
 		"arn:cluster:ecs-local-cluster",
 		entity,
