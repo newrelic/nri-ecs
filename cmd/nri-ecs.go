@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"os"
+	"fmt"
 	"time"
 
 	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
@@ -21,8 +21,7 @@ var (
 
 type argumentList struct {
 	sdkArgs.DefaultArgumentList
-	DebugMode bool `default:"false" help:"Enable ECS Agent Metadata debug mode."`
-	Fargate   bool `default:"false" help:"If running on fargate"`
+	Fargate bool `default:"false" help:"If running on fargate"`
 }
 
 func main() {
@@ -30,37 +29,28 @@ func main() {
 
 	ecsIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(args))
 	if err != nil {
-		log.Error("failed to create integration: %w", err)
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("failed to create integration: %v", err))
 	}
 
 	httpClient := ecs.ClientWithTimeout(5 * time.Second)
 
 	taskMetadataEnpoint, found := metadata.TaskMetadataEndpoint()
 	if !found {
-		log.Error("unable to find task metadata endpoint")
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("unable to find task metadata endpoint"))
 	}
 
 	body, err := metadata.MetadataResponse(httpClient, taskMetadataEnpoint)
 	if err != nil {
-		log.Error(
-			"unable to get response from v3 task metadata endpoint (%s): %v",
-			taskMetadataEnpoint,
-			err,
+		log.Fatal(
+			fmt.Errorf("unable to get response from v3 task metadata endpoint (%s): %v", taskMetadataEnpoint, err),
 		)
-		os.Exit(1)
 	}
 
-	if args.DebugMode {
-		log.Info("task metadata json response: %s", string(body))
-		os.Exit(0)
-	}
+	log.Debug("task metadata json response: %s", string(body))
 
 	taskMetadata := metadata.TaskResponse{}
 	if err = json.Unmarshal(body, &taskMetadata); err != nil {
-		log.Error("unable to parse response body: %v", err)
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("unable to parse response body: %v", err))
 	}
 
 	awsRegion := metadata.AWSRegionFromTask(taskMetadata.TaskARN)
@@ -69,8 +59,7 @@ func main() {
 
 	clusterEntity, err := infra.NewClusterEntity(clusterARN, ecsIntegration)
 	if err != nil {
-		log.Error("unable to create cluster entity: %v", err)
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("unable to create cluster entity: %v", err))
 	}
 
 	if err = infra.AddClusterInventory(clusterName, clusterARN, clusterEntity); err != nil {
