@@ -43,3 +43,23 @@ func TestMetadataResponse(t *testing.T) {
 
 	assert.Equal(t, taskJSON, response)
 }
+
+func TestClusterToClusterName(t *testing.T) {
+	tt := []struct {
+		cluster, expectedClusterName string
+	}{
+		{"my-cluster", "my-cluster"},
+		{"arn:aws:ecs:eu-south-1337:1:cluster/my_awesome_long_cluster_name_which_nobody_ever_used_before", "my_awesome_long_cluster_name_which_nobody_ever_used_before"},
+		{"arn:aws:ecs:eu-south-1337:1:cluster/x", "x"},
+		{"arn:aws:ecs:eu-south-1337:1:cluster/", "arn:aws:ecs:eu-south-1337:1:cluster/"},
+		{"", ""},
+		{"hello world", "hello world"},
+		{"arn:aws:iam::123456789012:user/Development/product_1234/askdk", "arn:aws:iam::123456789012:user/Development/product_1234/askdk"}, // not an ECS arn
+		{"arn:aws:ecs:eu-south-1337:cluster/fsi", "arn:aws:ecs:eu-south-1337:cluster/fsi"},                                                 // missing account number
+	}
+
+	for _, testCase := range tt {
+		clusterName := metadata.ClusterToClusterName(testCase.cluster)
+		assert.Equal(t, testCase.expectedClusterName, clusterName)
+	}
+}

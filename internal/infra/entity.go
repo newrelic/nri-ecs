@@ -1,9 +1,10 @@
-package ecs
+package infra
 
 import (
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
 
+	"github.com/newrelic/nri-ecs/internal/ecs"
 	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 )
 
@@ -23,7 +24,7 @@ func NewClusterEntity(clusterARN string, i *integration.Integration) (*integrati
 
 // AddClusterInventoryLocalEntity adds some ecs attributes as inventory
 // to the integration's local entity.
-func AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion string, launchType LaunchType, integration *integration.Integration) error {
+func AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion string, launchType ecs.LaunchType, integration *integration.Integration) error {
 	entity := integration.LocalEntity()
 	err := entity.SetInventoryItem("host", "ecsClusterName", clusterName)
 	if err != nil {

@@ -170,3 +170,30 @@ func ResourceNameAndARNBase(resourceARN string) (resourceName string, arnPrefix 
 	resourceName = resourceARN[strings.Index(resourceARN, "/")+1:]
 	return resourceName, arnPrefix
 }
+
+// ClusterToClusterName will convert the given cluster string returned by the V3 metadata endpoint to the cluster name.
+// This is needed, because the Task v3 metadata endpoint returns different Cluster strings for Fargate and EC2:
+// Fargate: Cluster is the ClusterARN
+// EC2: Cluster is the ClusterName
+func ClusterToClusterName(cluster string) string {
+	if !isECSARN(cluster) {
+		return cluster
+	}
+	clusterName, _ := ResourceNameAndARNBase(cluster)
+	if clusterName == "" {
+		return cluster
+	}
+
+	return clusterName
+}
+
+// isARN returns whether the given string is an ECS ARN by looking for
+// whether the string starts with "arn:aws:ecs" and contains the correct number
+// of sections delimited by colons(:).
+// Copied from: https://github.com/aws/aws-sdk-go/blob/81abf80dec07700b14a91ece14b8eca6c5e6b4f8/aws/arn/arn.go#L81
+func isECSARN(arn string) bool {
+	const arnPrefix = "arn:aws:ecs"
+	const arnSections = 6
+
+	return strings.HasPrefix(arn, arnPrefix) && strings.Count(arn, ":") >= arnSections-1
+}

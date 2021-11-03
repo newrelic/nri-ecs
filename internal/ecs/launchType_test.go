@@ -5,11 +5,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/newrelic/nri-ecs/pkg/ecs"
+	"github.com/newrelic/nri-ecs/internal/ecs"
 )
 
 func TestNewFargateLaunchType(t *testing.T) {
-
 	testCases := []struct {
 		isFargate  bool
 		launchType string
@@ -29,5 +28,4 @@ func TestNewFargateLaunchType(t *testing.T) {
 			assert.Equal(t, ecs.NewLaunchType(testCase.isFargate), ecs.LaunchType(testCase.launchType))
 		})
 	}
-
 }

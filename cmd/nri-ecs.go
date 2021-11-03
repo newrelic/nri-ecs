@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"strings"
 	"time"
 
 	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/infra-integrations-sdk/log"
 
+	"github.com/newrelic/nri-ecs/internal/ecs"
 	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
-	"github.com/newrelic/nri-ecs/pkg/ecs"
+	"github.com/newrelic/nri-ecs/internal/infra"
 )
 
 var (
@@ -64,27 +64,27 @@ func main() {
 	}
 
 	awsRegion := metadata.AWSRegionFromTask(taskMetadata.TaskARN)
-	clusterName := clusterToClusterName(taskMetadata.Cluster)
+	clusterName := metadata.ClusterToClusterName(taskMetadata.Cluster)
 	clusterARN := metadata.ClusterARNFromTask(taskMetadata.TaskARN, clusterName)
 
-	clusterEntity, err := ecs.NewClusterEntity(clusterARN, ecsIntegration)
+	clusterEntity, err := infra.NewClusterEntity(clusterARN, ecsIntegration)
 	if err != nil {
 		ecsIntegration.Logger().Errorf("unable to create cluster entity: %v", err)
 		os.Exit(1)
 	}
 
-	err = ecs.AddClusterInventory(clusterName, clusterARN, clusterEntity)
+	err = infra.AddClusterInventory(clusterName, clusterARN, clusterEntity)
 	if err != nil {
 		ecsIntegration.Logger().Errorf("unable to register cluster inventory: %v", err)
 	}
 
-	_, err = ecs.NewClusterHeartbeatMetricSet(clusterName, clusterARN, clusterEntity)
+	_, err = infra.NewClusterHeartbeatMetricSet(clusterName, clusterARN, clusterEntity)
 	if err != nil {
 		ecsIntegration.Logger().Errorf("unable to create metrics for cluster: %v", err)
 	}
 
 	launchType := ecs.NewLaunchType(args.Fargate)
-	err = ecs.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration)
+	err = infra.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration)
 
 	if err != nil {
 		ecsIntegration.Logger().Errorf("unable to register cluster inventory to local entity: %v", err)
@@ -94,31 +94,4 @@ func main() {
 	if err != nil {
 		ecsIntegration.Logger().Errorf("unable to publish metrics for cluster: %v", err)
 	}
-}
-
-// clusterToClusterName will convert the given cluster string returned by the V3 metadata endpoint to the cluster name.
-// This is needed, because the Task v3 metadata endpoint returns different Cluster strings for Fargate and EC2:
-// Fargate: Cluster is the ClusterARN
-// EC2: Cluster is the ClusterName
-func clusterToClusterName(cluster string) string {
-	if !isECSARN(cluster) {
-		return cluster
-	}
-	clusterName, _ := metadata.ResourceNameAndARNBase(cluster)
-	if clusterName == "" {
-		return cluster
-	}
-
-	return clusterName
-}
-
-// isARN returns whether the given string is an ECS ARN by looking for
-// whether the string starts with "arn:aws:ecs" and contains the correct number
-// of sections delimited by colons(:).
-// Copied from: https://github.com/aws/aws-sdk-go/blob/81abf80dec07700b14a91ece14b8eca6c5e6b4f8/aws/arn/arn.go#L81
-func isECSARN(arn string) bool {
-	const arnPrefix = "arn:aws:ecs"
-	const arnSections = 6
-
-	return strings.HasPrefix(arn, arnPrefix) && strings.Count(arn, ":") >= arnSections-1
 }
