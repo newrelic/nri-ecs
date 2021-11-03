@@ -10,7 +10,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/infra-integrations-sdk/log"
 
-	v3 "github.com/newrelic/nri-ecs/internal/metadata/v3"
+	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 	"github.com/newrelic/nri-ecs/pkg/ecs"
 )
 
@@ -36,13 +36,13 @@ func main() {
 
 	httpClient := ecs.ClientWithTimeout(5 * time.Second)
 
-	taskMetadataEnpoint, found := v3.TaskMetadataEndpoint()
+	taskMetadataEnpoint, found := metadata.TaskMetadataEndpoint()
 	if !found {
 		ecsIntegration.Logger().Errorf("unable to find task metadata endpoint")
 		os.Exit(1)
 	}
 
-	body, err := v3.MetadataResponse(httpClient, taskMetadataEnpoint)
+	body, err := metadata.MetadataResponse(httpClient, taskMetadataEnpoint)
 	if err != nil {
 		ecsIntegration.Logger().Errorf(
 			"unable to get response from v3 task metadata endpoint (%s): %v",
@@ -57,15 +57,15 @@ func main() {
 		os.Exit(0)
 	}
 
-	var taskMetadata v3.TaskResponse
+	var taskMetadata metadata.TaskResponse
 	if err = json.Unmarshal(body, &taskMetadata); err != nil {
 		ecsIntegration.Logger().Errorf("unable to parse response body: %v", err)
 		os.Exit(1)
 	}
 
-	awsRegion := v3.AWSRegionFromTask(taskMetadata.TaskARN)
+	awsRegion := metadata.AWSRegionFromTask(taskMetadata.TaskARN)
 	clusterName := clusterToClusterName(taskMetadata.Cluster)
-	clusterARN := v3.ClusterARNFromTask(taskMetadata.TaskARN, clusterName)
+	clusterARN := metadata.ClusterARNFromTask(taskMetadata.TaskARN, clusterName)
 
 	clusterEntity, err := ecs.NewClusterEntity(clusterARN, ecsIntegration)
 	if err != nil {
@@ -104,7 +104,7 @@ func clusterToClusterName(cluster string) string {
 	if !isECSARN(cluster) {
 		return cluster
 	}
-	clusterName, _ := v3.ResourceNameAndARNBase(cluster)
+	clusterName, _ := metadata.ResourceNameAndARNBase(cluster)
 	if clusterName == "" {
 		return cluster
 	}
