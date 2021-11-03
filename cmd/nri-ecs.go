@@ -38,13 +38,13 @@ func main() {
 
 	taskMetadataEnpoint, found := metadata.TaskMetadataEndpoint()
 	if !found {
-		ecsIntegration.Logger().Errorf("unable to find task metadata endpoint")
+		log.Error("unable to find task metadata endpoint")
 		os.Exit(1)
 	}
 
 	body, err := metadata.MetadataResponse(httpClient, taskMetadataEnpoint)
 	if err != nil {
-		ecsIntegration.Logger().Errorf(
+		log.Error(
 			"unable to get response from v3 task metadata endpoint (%s): %v",
 			taskMetadataEnpoint,
 			err,
@@ -57,9 +57,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	var taskMetadata metadata.TaskResponse
+	taskMetadata := metadata.TaskResponse{}
 	if err = json.Unmarshal(body, &taskMetadata); err != nil {
-		ecsIntegration.Logger().Errorf("unable to parse response body: %v", err)
+		log.Error("unable to parse response body: %v", err)
 		os.Exit(1)
 	}
 
@@ -69,29 +69,24 @@ func main() {
 
 	clusterEntity, err := infra.NewClusterEntity(clusterARN, ecsIntegration)
 	if err != nil {
-		ecsIntegration.Logger().Errorf("unable to create cluster entity: %v", err)
+		log.Error("unable to create cluster entity: %v", err)
 		os.Exit(1)
 	}
 
-	err = infra.AddClusterInventory(clusterName, clusterARN, clusterEntity)
-	if err != nil {
-		ecsIntegration.Logger().Errorf("unable to register cluster inventory: %v", err)
+	if err = infra.AddClusterInventory(clusterName, clusterARN, clusterEntity); err != nil {
+		log.Error("unable to register cluster inventory: %v", err)
 	}
 
-	_, err = infra.NewClusterHeartbeatMetricSet(clusterName, clusterARN, clusterEntity)
-	if err != nil {
-		ecsIntegration.Logger().Errorf("unable to create metrics for cluster: %v", err)
+	if _, err = infra.NewClusterHeartbeatMetricSet(clusterName, clusterARN, clusterEntity); err != nil {
+		log.Error("unable to create metrics for cluster: %v", err)
 	}
 
 	launchType := ecs.NewLaunchType(args.Fargate)
-	err = infra.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration)
-
-	if err != nil {
-		ecsIntegration.Logger().Errorf("unable to register cluster inventory to local entity: %v", err)
+	if err = infra.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration); err != nil {
+		log.Error("unable to register cluster inventory to local entity: %v", err)
 	}
 
-	err = ecsIntegration.Publish()
-	if err != nil {
-		ecsIntegration.Logger().Errorf("unable to publish metrics for cluster: %v", err)
+	if err = ecsIntegration.Publish(); err != nil {
+		log.Error("unable to publish metrics for cluster: %v", err)
 	}
 }
