@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,27 +10,24 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/nri-ecs/cmd/testdata"
+	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 )
 
-func TestIntegrationPublish(t *testing.T) {
-	clusterName := "ecs-local-cluster"
-	// Mock the metadata endpoint
-	ts := httptest.NewServer(http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			require.Equal(t, "/task", r.RequestURI)
-			response := fmt.Sprintf(
-				`{"Cluster": "%s", "TaskARN": "arn:aws:ecs:us-west-2:111111111111:task/%s/37e873f6-37b4-42a7-af47-eac7275c6152"}`,
-				clusterName,
-				clusterName,
-			)
-			w.Write([]byte(response))
-		},
-	))
-	defer ts.Close()
-	os.Setenv("ECS_CONTAINER_METADATA_URI", ts.URL)
-	defer os.Clearenv()
+const v3 = `{
+	"Cluster": "ecs-local-cluster", 
+	"TaskARN": "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
+	}`
 
+const v4 = `{
+	"Cluster": "ecs-local-cluster", 
+	"TaskARN": "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152",
+	"LaunchType": "EC2"
+	}`
+
+func TestIntegrationPublish(t *testing.T) {
+	args := ArgumentList{}
 	// Capture Stdout to get the integration output
 	stdout := os.Stdout
 	readerOut, writerOut, err := os.Pipe()
@@ -43,21 +39,62 @@ func TestIntegrationPublish(t *testing.T) {
 		os.Stdout = stdout
 	}()
 
-	main()
-
-	// Read the integration output from the captured stdout
-	b := make([]byte, 1024)
-	n, err := readerOut.Read(b)
-	if err != nil {
-		t.Fatal(err)
+	cases := map[string]struct {
+		response       string
+		endpointEnvVar string
+	}{
+		"from_v3_metadata_endpoint": {
+			response:       v3,
+			endpointEnvVar: metadata.ContainerMetadataEnvVar,
+		},
+		"from_v4_metadata_endpoint": {
+			response:       v4,
+			endpointEnvVar: metadata.ContainerMetadataV4EnvVar,
+		},
 	}
-	var result interface{}
-	err = json.Unmarshal(b[:n], &result)
-	require.NoError(t, err)
+	for testCaseName, testData := range cases {
+		testData := testData
 
-	var expected interface{}
-	err = json.Unmarshal([]byte(testdata.IntegrationOutput), &expected)
-	require.NoError(t, err)
+		t.Run(testCaseName, func(t *testing.T) {
+			ts := metadataServer(t, testData.response)
+			t.Setenv(testData.endpointEnvVar, ts.URL)
 
-	assert.Equal(t, expected, result)
+			ecsIntegration, _ := integration.New(integrationName, integrationVersion)
+
+			assert.NoError(t, Run(ecsIntegration, args))
+
+			// Read the integration output from the captured stdout
+			b := make([]byte, 1024)
+			n, err := readerOut.Read(b)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var result interface{}
+			err = json.Unmarshal(b[:n], &result)
+			require.NoError(t, err)
+
+			var expected interface{}
+			err = json.Unmarshal([]byte(testdata.IntegrationOutput), &expected)
+			require.NoError(t, err)
+
+			assert.Equal(t, expected, result)
+		})
+	}
+}
+
+func metadataServer(t *testing.T, response string) *httptest.Server {
+	testServer := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			require.Equal(t, "/task", r.RequestURI)
+
+			_, err := w.Write([]byte(response))
+			require.NoError(t, err)
+		},
+	))
+
+	t.Cleanup(func() {
+		testServer.Close()
+	})
+
+	return testServer
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/nri-ecs/internal/ecs"
+	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 	"github.com/newrelic/nri-ecs/internal/infra"
 )
 
@@ -41,7 +41,7 @@ func TestAddClusterInventoryToLocalEntity(t *testing.T) {
 	ecsClusterName := "my-cluster"
 	ecsClusterARN := "arn:my-cluster"
 	awsRegion := "us-east-1"
-	launchType := ecs.NewLaunchType(true)
+	launchType := metadata.LaunchType(true, "")
 
 	err := infra.AddClusterInventoryToLocalEntity(ecsClusterName, ecsClusterARN, awsRegion, launchType, i)
 	require.NoError(t, err)

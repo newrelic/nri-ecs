@@ -32,7 +32,7 @@ Resources:
               - Name: NRIA_OVERRIDE_HOST_ROOT
                 Value: "/host"
               - Name: NRIA_PASSTHROUGH_ENVIRONMENT
-                Value: ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS
+                Value: ECS_CONTAINER_METADATA_URI,ECS_CONTAINER_METADATA_URI_V4,ENABLE_NRI_ECS
               - Name: ENABLE_NRI_ECS
                 Value: "true"
               - Name: NRIA_VERBOSE

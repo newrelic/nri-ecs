@@ -19,19 +19,25 @@ var (
 	integrationVersion = "1.3.1"
 )
 
-type argumentList struct {
+type ArgumentList struct {
 	sdkArgs.DefaultArgumentList
 	Fargate bool `default:"false" help:"If running on fargate"`
 }
 
 func main() {
-	args := &argumentList{}
+	args := ArgumentList{}
 
-	ecsIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(args))
+	ecsIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to create integration: %v", err))
 	}
 
+	if err := Run(ecsIntegration, args); err != nil {
+		log.Fatal(fmt.Errorf("runing integration: %v", err))
+	}
+}
+
+func Run(ecsIntegration *integration.Integration, args ArgumentList) error {
 	httpClient := ecs.ClientWithTimeout(5 * time.Second)
 
 	taskMetadataEnpoint, found := metadata.TaskMetadataEndpoint()
@@ -70,7 +76,8 @@ func main() {
 		log.Error("unable to create metrics for cluster: %v", err)
 	}
 
-	launchType := ecs.NewLaunchType(args.Fargate)
+	launchType := metadata.LaunchType(args.Fargate, taskMetadata.LaunchType)
+
 	if err = infra.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration); err != nil {
 		log.Error("unable to register cluster inventory to local entity: %v", err)
 	}
@@ -78,4 +85,6 @@ func main() {
 	if err = ecsIntegration.Publish(); err != nil {
 		log.Error("unable to publish metrics for cluster: %v", err)
 	}
+
+	return nil
 }

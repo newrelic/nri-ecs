@@ -23,9 +23,13 @@ import (
 )
 
 const (
-	containerMetadataEnvVar = "ECS_CONTAINER_METADATA_URI"
-	maxRetries              = 4
-	durationBetweenRetries  = time.Second
+	ContainerMetadataEnvVar   = "ECS_CONTAINER_METADATA_URI"
+	ContainerMetadataV4EnvVar = "ECS_CONTAINER_METADATA_URI_V4"
+	maxRetries                = 4
+	durationBetweenRetries    = time.Second
+	EcsFargateLaunchType      = "fargate"
+	EcsEC2LaunchType          = "ec2"
+	EcsExternalLaunchType     = "external"
 )
 
 // TaskResponse defines the schema for the task response JSON object
@@ -37,6 +41,7 @@ type TaskResponse struct {
 	DesiredStatus      string              `json:"DesiredStatus,omitempty"`
 	KnownStatus        string              `json:"KnownStatus"`
 	AvailabilityZone   string              `json:"AvailabilityZone"`
+	LaunchType         string              `json:"LaunchType,omitempty"` // Added in v4.
 	Containers         []ContainerResponse `json:"Containers,omitempty"`
 	Limits             *LimitsResponse     `json:"Limits,omitempty"`
 	PullStartedAt      *time.Time          `json:"PullStartedAt,omitempty"`
@@ -131,19 +136,23 @@ func metadataResponse(client *http.Client, endpoint string) ([]byte, error) {
 	return body, nil
 }
 
-// TaskMetadataEndpoint returns the V3 endpoint to fetch task metadata.
+// TaskMetadataEndpoint returns the endpoint to fetch task metadata. v4 takes precedence over v3.
 func TaskMetadataEndpoint() (string, bool) {
-	baseEndpoint, found := metadataV3Endpoint()
-	if !found {
-		return "", found
-	}
-	return baseEndpoint + "/task", found
-}
+	baseEndpointV4 := os.Getenv(ContainerMetadataV4EnvVar)
 
-// metadataV3Endpoint returns the v3 metadata endpoint configured via the ECS_CONTAINER_METADATA_URI environment
-// variable.
-func metadataV3Endpoint() (string, bool) {
-	return os.LookupEnv(containerMetadataEnvVar)
+	baseEndpointV3 := os.Getenv(ContainerMetadataEnvVar)
+
+	baseEndpoint := ""
+	switch {
+	case baseEndpointV4 != "":
+		baseEndpoint = baseEndpointV4
+	case baseEndpointV3 != "":
+		baseEndpoint = baseEndpointV3
+	default:
+		return "", false
+	}
+
+	return baseEndpoint + "/task", true
 }
 
 // ClusterARNFromTask builds a cluster ARN from a task ARN and a given cluster name.
@@ -196,4 +205,21 @@ func isECSARN(arn string) bool {
 	const arnSections = 6
 
 	return strings.HasPrefix(arn, arnPrefix) && strings.Count(arn, ":") >= arnSections-1
+}
+
+// LaunchType returns the task ECS LaunchType. V3 endpoint does not report launchType so the func uses the FARGATE
+// argument to calculate the type.
+func LaunchType(fargate bool, launchType string) string {
+	lt := ""
+	switch {
+	case launchType != "":
+		// Lowercasing to keep compatibility with defined ec2 and fargate types.
+		lt = strings.ToLower(launchType)
+	case fargate:
+		lt = EcsFargateLaunchType
+	default:
+		lt = EcsEC2LaunchType
+	}
+
+	return lt
 }

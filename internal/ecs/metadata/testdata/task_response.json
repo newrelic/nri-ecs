@@ -5,6 +5,7 @@
   "Revision": "1",
   "DesiredStatus": "RUNNING",
   "KnownStatus": "RUNNING",
+  "LaunchType": "EC2",
   "Containers": [
     {
       "DockerId": "ba8f9cd3d16478683b774b024002ba77f73dc1d751c6b1199d5996afe051bd83",

@@ -63,3 +63,82 @@ func TestClusterToClusterName(t *testing.T) {
 		assert.Equal(t, testCase.expectedClusterName, clusterName)
 	}
 }
+
+func TestTaskMetadataEndpoint(t *testing.T) {
+	v4 := "http://localhost/v4"
+	v3 := "http://localhost/v3"
+	t.Run("returns_v4_endpoint_if_v3_and_v4_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataV4EnvVar, v4)
+		t.Setenv(metadata.ContainerMetadataEnvVar, v3)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v4+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("returns_v3_if_only_v3_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataEnvVar, v3)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v3+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("returns_v4_if_only_v4_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataEnvVar, v4)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v4+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("found_no_endpoints_if_no_envars_exists", func(t *testing.T) {
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, "", endpoint)
+		assert.Equal(t, false, found)
+	})
+}
+
+func TestFargateLaunchType(t *testing.T) {
+	testCases := []struct {
+		isFargate  bool
+		launchType string
+		expected   string
+	}{
+		{
+			isFargate:  true,
+			launchType: "",
+			expected:   metadata.EcsFargateLaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "",
+			expected:   metadata.EcsEC2LaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "EC2",
+			expected:   metadata.EcsEC2LaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "FARGATE",
+			expected:   metadata.EcsFargateLaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "EXTERNAL",
+			expected:   metadata.EcsExternalLaunchType,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.launchType, func(t *testing.T) {
+			assert.Equal(t, testCase.expected, metadata.LaunchType(testCase.isFargate, testCase.launchType))
+		})
+	}
+}
