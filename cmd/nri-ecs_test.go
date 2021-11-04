@@ -1,4 +1,4 @@
-package main
+package main_test
 
 import (
 	"encoding/json"
@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/newrelic/infra-integrations-sdk/integration"
+	main "github.com/newrelic/nri-ecs/cmd"
 	"github.com/newrelic/nri-ecs/cmd/testdata"
 	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 )
@@ -27,7 +28,7 @@ const v4 = `{
 	}`
 
 func TestIntegrationPublish(t *testing.T) {
-	args := ArgumentList{}
+	args := main.ArgumentList{}
 	// Capture Stdout to get the integration output
 	stdout := os.Stdout
 	readerOut, writerOut, err := os.Pipe()
@@ -59,9 +60,9 @@ func TestIntegrationPublish(t *testing.T) {
 			ts := metadataServer(t, testData.response)
 			t.Setenv(testData.endpointEnvVar, ts.URL)
 
-			ecsIntegration, _ := integration.New(integrationName, integrationVersion)
+			ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0")
 
-			assert.NoError(t, Run(ecsIntegration, args))
+			assert.NoError(t, main.Run(ecsIntegration, args))
 
 			// Read the integration output from the captured stdout
 			b := make([]byte, 1024)
