@@ -11,6 +11,8 @@ import (
 )
 
 func TestClusterARNFromTask(t *testing.T) {
+	t.Parallel()
+
 	taskARN := "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
 	clusterARN := metadata.ClusterARNFromTask(taskARN, "ecs-local-cluster")
 	assert.Equal(t, "arn:aws:ecs:us-west-2:111111111111:cluster/ecs-local-cluster", clusterARN)
@@ -20,6 +22,8 @@ func TestClusterARNFromTask(t *testing.T) {
 }
 
 func TestResourceNameAndARNBase(t *testing.T) {
+	t.Parallel()
+
 	taskARN := "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
 	resourceName, baseARN := metadata.ResourceNameAndARNBase(taskARN)
 	assert.Equal(t, "arn:aws:ecs:us-west-2:111111111111", baseARN)
@@ -27,6 +31,8 @@ func TestResourceNameAndARNBase(t *testing.T) {
 }
 
 func TestMetadataResponse(t *testing.T) {
+	t.Parallel()
+
 	taskResponseJSONFile := "testdata/task_response.json"
 	taskJSON, err := ioutil.ReadFile(taskResponseJSONFile)
 	assert.NoError(t, err)
@@ -45,6 +51,8 @@ func TestMetadataResponse(t *testing.T) {
 }
 
 func TestClusterToClusterName(t *testing.T) {
+	t.Parallel()
+
 	tt := []struct {
 		cluster, expectedClusterName string
 	}{
@@ -61,5 +69,88 @@ func TestClusterToClusterName(t *testing.T) {
 	for _, testCase := range tt {
 		clusterName := metadata.ClusterToClusterName(testCase.cluster)
 		assert.Equal(t, testCase.expectedClusterName, clusterName)
+	}
+}
+
+func TestTaskMetadataEndpoint(t *testing.T) {
+	v4 := "http://localhost/v4"
+	v3 := "http://localhost/v3"
+	t.Run("returns_v4_endpoint_if_v3_and_v4_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataV4EnvVar, v4)
+		t.Setenv(metadata.ContainerMetadataEnvVar, v3)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v4+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("returns_v3_if_only_v3_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataEnvVar, v3)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v3+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("returns_v4_if_only_v4_exists", func(t *testing.T) {
+		t.Setenv(metadata.ContainerMetadataEnvVar, v4)
+
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, v4+"/task", endpoint)
+		assert.Equal(t, true, found)
+	})
+
+	t.Run("found_no_endpoints_if_no_envars_exists", func(t *testing.T) {
+		endpoint, found := metadata.TaskMetadataEndpoint()
+
+		assert.Equal(t, "", endpoint)
+		assert.Equal(t, false, found)
+	})
+}
+
+func TestFargateLaunchType(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		isFargate  bool
+		launchType string
+		expected   string
+	}{
+		{
+			isFargate:  true,
+			launchType: "",
+			expected:   metadata.EcsFargateLaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "",
+			expected:   metadata.EcsEC2LaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "EC2",
+			expected:   metadata.EcsEC2LaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "FARGATE",
+			expected:   metadata.EcsFargateLaunchType,
+		},
+		{
+			isFargate:  false,
+			launchType: "EXTERNAL",
+			expected:   metadata.EcsExternalLaunchType,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.launchType, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, testCase.expected, metadata.LaunchType(testCase.isFargate, testCase.launchType))
+		})
 	}
 }

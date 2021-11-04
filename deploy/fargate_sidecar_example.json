@@ -36,7 +36,7 @@
           },
           {
             "name": "NRIA_PASSTHROUGH_ENVIRONMENT",
-            "value": "ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS,FARGATE"
+            "value": "ECS_CONTAINER_METADATA_URI,ECS_CONTAINER_METADATA_URI_V4,ENABLE_NRI_ECS,FARGATE"
           },
           {
             "name": "NRIA_CUSTOM_ATTRIBUTES",

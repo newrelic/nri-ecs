@@ -8,71 +8,73 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/nri-ecs/internal/ecs"
+	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
 	"github.com/newrelic/nri-ecs/internal/infra"
 )
 
-func TestNewClusterEntity(t *testing.T) {
+func Test_PopulateIntegration(t *testing.T) {
+	t.Parallel()
 	i, _ := integration.New("test", "dev")
-	cluster, err := infra.NewClusterEntity("arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster", i)
-	assert.NoError(t, err)
-	assert.Equal(t, "cluster/ecs-local-cluster", cluster.Metadata.Name)
-	assert.Equal(t, "arn:aws:ecs:us-west-2:xxxxxxxx", cluster.Metadata.Namespace)
-}
+	taskMetadata := metadata.TaskResponse{
+		Cluster:    "ecs-local-cluster",
+		TaskARN:    "arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster",
+		LaunchType: "FARGATE",
+	}
 
-func TestAddClusterInventory(t *testing.T) {
-	i, _ := integration.New("test", "dev")
+	t.Run("when_clusterMetadata_is_complete", func(t *testing.T) {
+		t.Parallel()
 
-	entity, err := i.Entity("foo", "bar")
-	assert.NoError(t, err)
+		clusterMetadata := infra.NewClusterMetadata(taskMetadata, true)
+		assert.NoError(t, infra.PopulateIntegration(i, clusterMetadata))
 
-	err = infra.AddClusterInventory("clusterName", "clusterARN", entity)
-	assert.NoError(t, err)
+		// The extra entity is the LocalEntity.
+		require.Len(t, i.Entities, 2)
+		clusterEntity := i.Entities[0]
 
-	item, ok := entity.Inventory.Item("cluster")
-	assert.True(t, ok, "inventory not found")
-	assert.Equal(t, "clusterName", item["name"])
-	assert.Equal(t, "clusterARN", item["arn"])
-}
+		t.Run("generates_the_cluster_entity", func(t *testing.T) {
+			t.Parallel()
 
-func TestAddClusterInventoryToLocalEntity(t *testing.T) {
-	i, _ := integration.New("test", "dev")
+			assert.Equal(t, "cluster/ecs-local-cluster", i.Entities[0].Metadata.Name)
+			assert.Equal(t, "arn:aws:ecs:us-west-2:xxxxxxxx", i.Entities[0].Metadata.Namespace)
+		})
 
-	ecsClusterName := "my-cluster"
-	ecsClusterARN := "arn:my-cluster"
-	awsRegion := "us-east-1"
-	launchType := ecs.NewLaunchType(true)
+		t.Run("generates_inventory", func(t *testing.T) {
+			t.Parallel()
 
-	err := infra.AddClusterInventoryToLocalEntity(ecsClusterName, ecsClusterARN, awsRegion, launchType, i)
-	require.NoError(t, err)
+			item, ok := clusterEntity.Inventory.Item("cluster")
 
-	e := i.LocalEntity()
-	ecsCluster, ok := e.Inventory.Item("host")
+			assert.True(t, ok, "inventory not found")
+			assert.Equal(t, clusterMetadata.Name, item["name"])
+			assert.Equal(t, clusterMetadata.ARN, item["arn"])
+		})
 
-	assert.True(t, ok, "inventory not found")
+		t.Run("add_cluster_metadata_to_local_entity", func(t *testing.T) {
+			t.Parallel()
 
-	expected := inventory.Item(map[string]interface{}{
-		"ecsClusterName": ecsClusterName,
-		"ecsClusterArn":  ecsClusterARN,
-		"awsRegion":      awsRegion,
-		"ecsLaunchType":  launchType,
+			e := i.LocalEntity()
+
+			ecsCluster, ok := e.Inventory.Item("host")
+			assert.True(t, ok, "inventory not found")
+
+			expected := inventory.Item(map[string]interface{}{
+				"ecsClusterName": clusterMetadata.Name,
+				"ecsClusterArn":  clusterMetadata.ARN,
+				"awsRegion":      clusterMetadata.Region,
+				"ecsLaunchType":  clusterMetadata.LaunchType,
+			})
+
+			assert.Equal(t, expected, ecsCluster)
+		})
+
+		t.Run("add_heartbeat_metric_set", func(t *testing.T) {
+			t.Parallel()
+
+			assert.Len(t, clusterEntity.Metrics, 1)
+
+			metrics := clusterEntity.Metrics[0].Metrics
+
+			assert.Equal(t, clusterMetadata.Name, metrics["clusterName"])
+			assert.Equal(t, clusterMetadata.ARN, metrics["arn"])
+		})
 	})
-	assert.Equal(t, expected, ecsCluster)
-}
-
-func TestNewClusterHeartbeatMetricSet(t *testing.T) {
-	integration, _ := integration.New("test", "dev")
-
-	entity, err := integration.Entity("foo", "bar")
-	assert.NoError(t, err)
-
-	metricSet, err := infra.NewClusterHeartbeatMetricSet(
-		"ecs-local-cluster",
-		"arn:cluster:ecs-local-cluster",
-		entity,
-	)
-	assert.NoError(t, err)
-
-	assert.Equal(t, "ecs-local-cluster", metricSet.Metrics["clusterName"])
-	assert.Equal(t, "arn:cluster:ecs-local-cluster", metricSet.Metrics["arn"])
 }

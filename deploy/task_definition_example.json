@@ -22,7 +22,7 @@
         },
         {
           "name": "NRIA_PASSTHROUGH_ENVIRONMENT",
-          "value": "ECS_CONTAINER_METADATA_URI,ENABLE_NRI_ECS"
+          "value": "ECS_CONTAINER_METADATA_URI,ECS_CONTAINER_METADATA_URI_V4,ENABLE_NRI_ECS"
         },
         {
           "name": "NRIA_VERBOSE",
