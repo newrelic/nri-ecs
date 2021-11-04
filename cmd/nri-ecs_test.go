@@ -1,10 +1,9 @@
 package main_test
 
 import (
-	"encoding/json"
+	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,18 +26,8 @@ const v4 = `{
 	"LaunchType": "EC2"
 	}`
 
-func TestIntegrationPublish(t *testing.T) {
+func Test_integration_publishes_payload(t *testing.T) {
 	args := main.ArgumentList{}
-	// Capture Stdout to get the integration output
-	stdout := os.Stdout
-	readerOut, writerOut, err := os.Pipe()
-	if err != nil {
-		t.Fatal(err)
-	}
-	os.Stdout = writerOut
-	defer func() {
-		os.Stdout = stdout
-	}()
 
 	cases := map[string]struct {
 		response       string
@@ -53,37 +42,57 @@ func TestIntegrationPublish(t *testing.T) {
 			endpointEnvVar: metadata.ContainerMetadataV4EnvVar,
 		},
 	}
+
 	for testCaseName, testData := range cases {
 		testData := testData
 
 		t.Run(testCaseName, func(t *testing.T) {
 			ts := metadataServer(t, testData.response)
+
 			t.Setenv(testData.endpointEnvVar, ts.URL)
 
-			ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0")
+			integrationPayload := &bytes.Buffer{}
+
+			ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0", integration.Writer(integrationPayload))
 
 			assert.NoError(t, main.Run(ecsIntegration, args))
 
-			// Read the integration output from the captured stdout
-			b := make([]byte, 1024)
-			n, err := readerOut.Read(b)
-			if err != nil {
-				t.Fatal(err)
-			}
-			var result interface{}
-			err = json.Unmarshal(b[:n], &result)
-			require.NoError(t, err)
-
-			var expected interface{}
-			err = json.Unmarshal([]byte(testdata.IntegrationOutput), &expected)
-			require.NoError(t, err)
-
-			assert.Equal(t, expected, result)
+			assert.JSONEq(t, testdata.IntegrationOutput, integrationPayload.String())
 		})
 	}
 }
 
+func Test_integration_fails_to_run(t *testing.T) {
+	args := main.ArgumentList{}
+
+	t.Run("when_no_metadata_endpoint_present", func(t *testing.T) {
+		ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0")
+
+		assert.Error(t, main.Run(ecsIntegration, args))
+	})
+
+	t.Run("when_no_metadata_endpoint_fails_to_respond", func(t *testing.T) {
+		ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0")
+
+		t.Setenv(metadata.ContainerMetadataV4EnvVar, "http://willfail/v4")
+
+		assert.Error(t, main.Run(ecsIntegration, args))
+	})
+
+	t.Run("when_no_metadata_endpoint_response_fails_to_unmarshall", func(t *testing.T) {
+		ecsIntegration, _ := integration.New("com.newrelic.ecs", "0.0.0")
+
+		ts := metadataServer(t, "will_fail")
+
+		t.Setenv(metadata.ContainerMetadataV4EnvVar, ts.URL)
+
+		assert.Error(t, main.Run(ecsIntegration, args))
+	})
+}
+
 func metadataServer(t *testing.T, response string) *httptest.Server {
+	t.Helper()
+
 	testServer := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			require.Equal(t, "/task", r.RequestURI)

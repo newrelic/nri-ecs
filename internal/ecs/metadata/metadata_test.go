@@ -11,6 +11,8 @@ import (
 )
 
 func TestClusterARNFromTask(t *testing.T) {
+	t.Parallel()
+
 	taskARN := "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
 	clusterARN := metadata.ClusterARNFromTask(taskARN, "ecs-local-cluster")
 	assert.Equal(t, "arn:aws:ecs:us-west-2:111111111111:cluster/ecs-local-cluster", clusterARN)
@@ -20,6 +22,8 @@ func TestClusterARNFromTask(t *testing.T) {
 }
 
 func TestResourceNameAndARNBase(t *testing.T) {
+	t.Parallel()
+
 	taskARN := "arn:aws:ecs:us-west-2:111111111111:task/ecs-local-cluster/37e873f6-37b4-42a7-af47-eac7275c6152"
 	resourceName, baseARN := metadata.ResourceNameAndARNBase(taskARN)
 	assert.Equal(t, "arn:aws:ecs:us-west-2:111111111111", baseARN)
@@ -27,6 +31,8 @@ func TestResourceNameAndARNBase(t *testing.T) {
 }
 
 func TestMetadataResponse(t *testing.T) {
+	t.Parallel()
+
 	taskResponseJSONFile := "testdata/task_response.json"
 	taskJSON, err := ioutil.ReadFile(taskResponseJSONFile)
 	assert.NoError(t, err)
@@ -45,6 +51,8 @@ func TestMetadataResponse(t *testing.T) {
 }
 
 func TestClusterToClusterName(t *testing.T) {
+	t.Parallel()
+
 	tt := []struct {
 		cluster, expectedClusterName string
 	}{
@@ -104,6 +112,8 @@ func TestTaskMetadataEndpoint(t *testing.T) {
 }
 
 func TestFargateLaunchType(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		isFargate  bool
 		launchType string
@@ -138,6 +148,8 @@ func TestFargateLaunchType(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.launchType, func(t *testing.T) {
+			t.Parallel()
+
 			assert.Equal(t, testCase.expected, metadata.LaunchType(testCase.isFargate, testCase.launchType))
 		})
 	}

@@ -69,8 +69,12 @@ func Test_PopulateIntegration(t *testing.T) {
 		t.Run("add_heartbeat_metric_set", func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, clusterMetadata.Name, i.Entities[0].Metrics[0].Metrics["clusterName"])
-			assert.Equal(t, clusterMetadata.ARN, i.Entities[0].Metrics[0].Metrics["arn"])
+			assert.Len(t, clusterEntity.Metrics, 1)
+
+			metrics := clusterEntity.Metrics[0].Metrics
+
+			assert.Equal(t, clusterMetadata.Name, metrics["clusterName"])
+			assert.Equal(t, clusterMetadata.ARN, metrics["arn"])
 		})
 	})
 }
