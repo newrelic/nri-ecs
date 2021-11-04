@@ -42,48 +42,27 @@ func Run(ecsIntegration *integration.Integration, args ArgumentList) error {
 
 	taskMetadataEnpoint, found := metadata.TaskMetadataEndpoint()
 	if !found {
-		log.Fatal(fmt.Errorf("unable to find task metadata endpoint"))
+		return fmt.Errorf("unable to find task metadata endpoint")
 	}
 
 	body, err := metadata.MetadataResponse(httpClient, taskMetadataEnpoint)
 	if err != nil {
-		log.Fatal(
-			fmt.Errorf("unable to get response from v3 task metadata endpoint (%s): %v", taskMetadataEnpoint, err),
-		)
+		return fmt.Errorf("unable to get response from v3 task metadata endpoint (%s): %w", taskMetadataEnpoint, err)
 	}
 
 	log.Debug("task metadata json response: %s", string(body))
 
 	taskMetadata := metadata.TaskResponse{}
 	if err = json.Unmarshal(body, &taskMetadata); err != nil {
-		log.Fatal(fmt.Errorf("unable to parse response body: %v", err))
+		return fmt.Errorf("unable to parse response body: %w", err)
 	}
 
-	awsRegion := metadata.AWSRegionFromTask(taskMetadata.TaskARN)
-	clusterName := metadata.ClusterToClusterName(taskMetadata.Cluster)
-	clusterARN := metadata.ClusterARNFromTask(taskMetadata.TaskARN, clusterName)
-
-	clusterEntity, err := infra.NewClusterEntity(clusterARN, ecsIntegration)
-	if err != nil {
-		log.Fatal(fmt.Errorf("unable to create cluster entity: %v", err))
-	}
-
-	if err = infra.AddClusterInventory(clusterName, clusterARN, clusterEntity); err != nil {
-		log.Error("unable to register cluster inventory: %v", err)
-	}
-
-	if _, err = infra.NewClusterHeartbeatMetricSet(clusterName, clusterARN, clusterEntity); err != nil {
-		log.Error("unable to create metrics for cluster: %v", err)
-	}
-
-	launchType := metadata.LaunchType(args.Fargate, taskMetadata.LaunchType)
-
-	if err = infra.AddClusterInventoryToLocalEntity(clusterName, clusterARN, awsRegion, launchType, ecsIntegration); err != nil {
-		log.Error("unable to register cluster inventory to local entity: %v", err)
+	if err = infra.PopulateIntegration(ecsIntegration, infra.NewClusterMetadata(taskMetadata, args.Fargate)); err != nil {
+		return fmt.Errorf("populating integration metadata: %w", err)
 	}
 
 	if err = ecsIntegration.Publish(); err != nil {
-		log.Error("unable to publish metrics for cluster: %v", err)
+		return fmt.Errorf("unable to publish metrics for cluster: %w", err)
 	}
 
 	return nil
