@@ -56,7 +56,8 @@
   "placementConstraints": [],
   "family": "newrelic-infra",
   "requiresCompatibilities": [
-    "EC2"
+    "EC2",
+    "EXTERNAL"
   ],
   "networkMode": "host",
   "volumes": [

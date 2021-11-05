@@ -22,17 +22,18 @@ The following tools are required:
 
 The installer executes the following steps:
 
-  - Creates the required AWS resources. (Fargate and EC2 launch types)
+  - Creates the required AWS resources. (All launch types)
 
   - Downloads the task definition template hosted in
     https://download.newrelic.com/infrastructure_agent/integrations/ecs/newrelic-infra-ecs-latest.json
-    saving it as "newrelic-infra-task-definition.json". (EC2 launch type only)
+    saving it as "newrelic-infra-task-definition.json". (EC2/EXTERNAL launch type only)
 
-  - Replaces the placeholders in the template. (EC2 launch type only)
+  - Replaces the placeholders in the template. (EC2/EXTERNAL launch type only)
 
-  - Registers the task definition from "newrelic-infra-task-definition.json". (EC2 launch type only)
+  - Registers the task definition from "newrelic-infra-task-definition.json". (EC2/EXTERNAL launch type only)
 
-  - Creates a service for the registered task. (EC2 launch type only)
+  - Creates a service for the registered task for EC2 launch type unless -e is defined 
+    where EXTERNAL launch type service is created.
 
 The installation process creates the task definition file
 "newrelic-infra-task-definition.json". When this file is present the
@@ -50,20 +51,20 @@ be used, to check the region you have set up run the following command:
 Executing the installer with the default values creates the following AWS
 resources:
 
-  - Systems Manager (SSM) parameter "/newrelic-infra/ecs/license-key". (Fargate and EC2 launch types)
+  - Systems Manager (SSM) parameter "/newrelic-infra/ecs/license-key". (All launch types)
 
   - IAM policy "NewRelicSSMLicenseKeyReadAccess" which enables access to the
-    SSM parameter with the license key. (Fargate and EC2 launch types)
+    SSM parameter with the license key. (All launch types)
 
   - IAM role "NewRelicECSTaskExecutionRole" to be used as the task execution role
     https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html
-    Policies attached to the role (Fargate and EC2 launch types):
+    Policies attached to the role (All launch types):
 
       * NewRelicSSMLicenseKeyReadAccess (created by the installer).
       * AmazonEC2ContainerServiceforEC2Role
       * AmazonECSTaskExecutionRolePolicy
 
-  - Registers the "newrelic-infra" ECS task definition. (EC2 launch type)
+  - Registers the "newrelic-infra" ECS task definition. (EC2/EXTERNAL launch type)
 
   - Creates the service "newrelic-infra" for the registered task
     using DAEMON scheduling strategy. (EC2 launch type)
@@ -77,14 +78,15 @@ ARGS:
   -n Task definition family name (defaults to newrelic-infra).
 
 OPTIONS:
-  -h Print help information.
-  -u Uninstall. Deletes all the AWS resources related to the integration. The
-     same arguments used for installing the integration must be specified
-     when running the uninstall command, otherwise the default names will be
-     used when looking what resources to delete.
-  -d Dry run (only valid when uninstall -u is set). Print all commands that will be executed without running them.
-     The aws cli is used for validation, so an aws token is required.
-  -fargate Fargate mode (defaults to false)
+  -h  Print help information.
+  -u  Uninstall. Deletes all the AWS resources related to the integration. The
+      same arguments used for installing the integration must be specified
+      when running the uninstall command, otherwise the default names will be
+      used when looking what resources to delete.
+  -d  Dry run (only valid when uninstall -u is set). Print all commands that will be executed without running them.
+      The aws cli is used for validation, so an aws token is required.
+  -f  Fargate mode (defaults to false)
+  -e  Create External ECS instance Daemon Service.
 HELPMSG
 }
 
@@ -93,8 +95,9 @@ uninstall() {
   local role=$2
   local policy=$3
   local service=$4
-  local cluster=$5
-  local task_family_name=$6
+  local service_external=$5
+  local cluster=$6
+  local task_family_name=$7
 
   if [ $DRY_RUN ]; then
     echo "Dry run set, printing aws commands"
@@ -132,6 +135,9 @@ uninstall() {
 
   echo "Deleting service $service..."
   run aws ecs delete-service --service "$service" --cluster "$cluster"
+  
+  echo "Deleting service $service..."
+  run aws ecs delete-service --service "$service_external" --cluster "$cluster"
 
   echo "Deregistering all newrelic-infra task definitions..."
   local task_arns
@@ -251,7 +257,13 @@ create_service() {
   local cluster_name=$1
   local service_name=$2
   local task_definition=$3
-  aws ecs create-service --cluster "$cluster_name" --service-name "$service_name" --task-definition "$task_definition" --scheduling-strategy DAEMON >>/dev/null
+  local launch_type=$4
+  aws ecs create-service \
+    --cluster "$cluster_name" \
+    --service-name "$service_name" \
+    --task-definition "$task_definition" \
+    --scheduling-strategy DAEMON \
+    --launch-type "$launch_type"  >>/dev/null
 }
 
 set_task_family_name() {
@@ -292,14 +304,15 @@ set_task_deploy_method() {
 service_exists() {
   local cluster_name=$1
   local service_name=$2
-  aws ecs list-services --cluster "$cluster_name" --output text | grep "$service_name" >>/dev/null
+  aws ecs list-services --cluster "$cluster_name" --output text | grep "$service_name$" >>/dev/null
 }
 
 update_service() {
   local cluster_name=$1
   local service_name=$2
   local task_definition=$3
-  aws ecs update-service --cluster "$cluster_name" --service "$service_name" --task-definition "$task_definition" >>/dev/null
+  local launch_type=$4
+  aws ecs update-service --cluster "$cluster_name" --service "$service_name" --task-definition "$task_definition" --launch-type "$launch_type" >>/dev/null
 }
 
 create_task_execution_role() {
@@ -394,6 +407,7 @@ main() {
   local cluster_name=""
   local license_key=""
   local fargate=false
+  local external=false
   local is_uninstall=false
   local task_execution_role="NewRelicECSTaskExecutionRole"
   local license_key_parameter_name="/newrelic-infra/ecs/license-key"
@@ -402,9 +416,12 @@ main() {
   local task_definition_url="https://download.newrelic.com/infrastructure_agent/integrations/ecs/newrelic-infra-ecs-ec2-latest.json"
   local task_definition_file="newrelic-infra-task-definition.json"
   local service_name="newrelic-infra"
+  local service_name_launch_type="EC2"
+  local service_name_external="newrelic-infra-external"
+  local service_name_external_launch_type="EXTERNAL"
   local task_family_name="newrelic-infra"
 
-  while getopts c:l:n:hudf option; do
+  while getopts c:l:n:hudfe option; do
     case "$option" in
     l)
       license_key=$OPTARG
@@ -421,6 +438,9 @@ main() {
       ;;
     d)
       DRY_RUN=true
+      ;;
+    e)
+      external=true
       ;;
     f)
       fargate=true
@@ -444,6 +464,7 @@ main() {
       "$task_execution_role" \
       "$license_key_access_policy_name" \
       "$service_name" \
+      "$service_name_external" \
       "$cluster_name" \
       "$task_family_name"
     exit 0
@@ -458,7 +479,11 @@ main() {
   if [ "$fargate" == true ]; then
     echo "Detected Fargate launch type parameter."
   else
-    echo "Detected EC2 launch type (default)."
+    if [ "$external" == true ]; then
+      echo "Detected EXTERNAL launch type parameter."
+    else
+      echo "Detected EC2 launch type (default)."
+    fi
   fi
 
   echo "Checking required tools."
@@ -521,17 +546,29 @@ main() {
   echo "Registering task definition $task_definition from file $task_definition_file..."
   register_task_definition "$task_definition_file" || error_exit "couldn't register task definition $task_definition_file."
 
-  echo "Checking if service $service_name in cluster $cluster_name already exists..."
+  if [ "$external" == true ]; then
+    echo "Checking if service $service_name_external in cluster $cluster_name already exists..."
 
-  if service_exists "$cluster_name" "$service_name"; then
-    echo "Service $service_name in cluster $cluster_name already exists. Updating to latest task definition of $task_definition."
-    update_service "$cluster_name" "$service_name" "$task_definition" || error_exit "couldn't update the $service_name service."
-    echo "Finished upgrade of the ECS integration successfully."
-  else
-    echo "Creating daemon service $service_name for task $task_definition in cluster $cluster_name..."
-    create_service "$cluster_name" "$service_name" "$task_definition" || error_exit "couldn't create the $service_name service."
-    echo "Finished installation of the ECS integration successfully."
+    if service_exists "$cluster_name" "$service_name_external"; then
+      echo "Service $service_name_external in cluster $cluster_name already exists. Updating to latest task definition of $task_definition."
+      update_service "$cluster_name" "$service_name_external" "$task_definition" "$service_name_external_launch_type" || error_exit "couldn't update the $service_name_external service."
+    else
+      echo "Creating daemon service $service_name_external for task $task_definition in cluster $cluster_name..."
+      create_service "$cluster_name" "$service_name_external" "$task_definition" "$service_name_external_launch_type" || error_exit "couldn't create the $service_name_external service."
+    fi
+  else # EC2 default launch type.
+    echo "Checking if service $service_name in cluster $cluster_name already exists..."
+
+    if service_exists "$cluster_name" "$service_name"; then
+      echo "Service $service_name in cluster $cluster_name already exists. Updating to latest task definition of $task_definition."
+      update_service "$cluster_name" "$service_name" "$task_definition" "$service_name_launch_type" || error_exit "couldn't update the $service_name service."
+    else
+      echo "Creating daemon service $service_name for task $task_definition in cluster $cluster_name..."
+      create_service "$cluster_name" "$service_name" "$task_definition" "$service_name_launch_type" || error_exit "couldn't create the $service_name service."
+    fi
   fi
+
+  echo "Finished installation of the ECS integration successfully."
 }
 
 main "$@" || exit 1
