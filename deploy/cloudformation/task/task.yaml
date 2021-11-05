@@ -12,6 +12,7 @@ Resources:
         Family: "newrelic-infra"
         RequiresCompatibilities:
           - EC2
+          - EXTERNAL
         NetworkMode: host
         ExecutionRoleArn: !Ref ExecutionRoleARN
         Volumes:
