@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.0
+- Now the integration is added to the `nri-ecs` image, which is based
+  on the `infrastructure-bundle` image
+- Add support for External launch type instances.
+- Update to infrastructure-bundle 2.7.4
+
 ## 1.3.1 - 2021-04-16
 - Update to infrastructure-bundle 2.4.1
 

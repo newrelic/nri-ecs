@@ -1,25 +1,17 @@
-NATIVEOS	 := $(shell go version | awk -F '[ /]' '{print $$4}')
-NATIVEARCH	 := $(shell go version | awk -F '[ /]' '{print $$5}')
 INTEGRATION  := nri-ecs
 BINARY_NAME   = $(INTEGRATION)
-GO_PKGS      := $(shell go list ./... | grep -v "/vendor/")
-RELEASE_VERSION ?= "dev" # Populated by release packages or manifest workflows.
-RELEASE_TAG :=
-RELEASE_STRING := ${RELEASE_VERSION}${RELEASE_TAG}
+
+# Version of the integration without 'v' prefix. Populated from release tag on CI/CD.
+RELEASE_VERSION ?= "0.0.0"
+RELEASE_STRING := ${RELEASE_VERSION}
 
 COMMIT ?= $(shell git rev-parse HEAD || echo "unknown")
 LD_FLAGS ?= "-X 'main.integrationVersion=$(RELEASE_VERSION)' -X 'main.gitCommit=$(COMMIT)'"
 
-INFRA_BUNDLE_VERSION ?= "dev" # Populated by release manifest workflow.
-INFRA_BUNDLE_IMAGE := newrelic/infrastructure-bundle:$(INFRA_BUNDLE_VERSION)
+NRI_ECS_IMAGE_REPO ?= newrelic/nri-ecs
+NRI_ECS_IMAGE_TAG ?= "dev"
+NRI_ECS_IMAGE := $(NRI_ECS_IMAGE_REPO):$(NRI_ECS_IMAGE_TAG)
 
-# compile & package targets
-OS := linux
-ARCH := amd64
-
-FILENAME_TARBALL := $(BINARY_NAME)_$(OS)_$(RELEASE_STRING)_$(ARCH).tar.gz
-PACKAGE_DIR     := ./package/source
-TARBALL_DIR     := ./package/tarball
 MANIFEST_DIR    := ./package/manifests
 
 EXAMPLE_MANIFEST_DIR = ./deploy
@@ -35,7 +27,10 @@ EXAMPLE_FARGATE_SIDECAR_FILE := fargate_sidecar_example.json
 S3_BASE_FOLDER ?= s3://nr-downloads-main/infrastructure_agent
 S3_ECS_FOLDER := $(S3_BASE_FOLDER)/integrations/ecs
 S3_CLOUDFORMATION_FOLDER := $(S3_ECS_FOLDER)/cloudformation
-S3_TARBALL_FOLDER := $(S3_BASE_FOLDER)/binaries/$(OS)/$(ARCH)
+
+all: build
+
+build: clean test compile
 
 upload_manifests: prepare_manifests
 	@echo "=== $(INTEGRATION) === [ upload manifests ]: uploading manifests to S3"
@@ -75,8 +70,8 @@ prepare_manifests:
 	cp $(EXAMPLE_MANIFEST_DIR)/$(INSTALLER_SCRIPT_FILE) $(MANIFEST_DIR)
 	cp -r $(EXAMPLE_MANIFEST_DIR)/cloudformation $(MANIFEST_DIR)
 
-	# change all occurences of <INTEGRATION_IMAGE> to the released infra bundle
-	find $(MANIFEST_DIR) -type f -exec sed -i "s|<INTEGRATION_IMAGE>|$(INFRA_BUNDLE_IMAGE)|" {} +
+	# change all occurences of <INTEGRATION_IMAGE> to the released image
+	find $(MANIFEST_DIR) -type f -exec sed -i "s|<INTEGRATION_IMAGE>|$(NRI_ECS_IMAGE)|" {} +
 
 clean:
 	@echo "=== $(INTEGRATION) === [ clean ]: Removing binaries and temporary files..."
@@ -84,29 +79,28 @@ clean:
 
 compile:
 	@echo "=== $(INTEGRATION) === [ compile ]: Building $(BINARY_NAME)..."
-	@go build -o bin/$(BINARY_NAME) -ldflags $(LD_FLAGS) ./cmd
+	@go build -o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH) -ldflags $(LD_FLAGS) ./cmd
+ 
+compile-multiarch:
+	$(MAKE) compile GOOS=linux GOARCH=amd64
+	$(MAKE) compile GOOS=linux GOARCH=arm64
+	$(MAKE) compile GOOS=linux GOARCH=arm
 
-compile_for:
-	@echo "=== $(INTEGRATION) === [ compile ]: Building..."
+## GOOS and GOARCH are manually set so the output BINARY_NAME includes them as suffixes.
+## Additionally, DOCKER_BUILDKIT is set since it's needed for Docker to populate TARGETOS and TARGETARCH ARGs.
+## Here we call $(MAKE) build instead of using a dependency because the latter would, for some reason, prevent
+## the BINARY_NAME conditional from working.
+## Multi-Arch image building happens on the CI workflow. This target is for testing only.
+image: GOOS := $(if $(GOOS),$(GOOS),linux)
+image: GOARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
+image: ## Builds metrics-adapter Docker image.
+	@if [ "$(GOOS)" != "linux" ]; then echo "'make image' must be called with GOOS=linux (or empty), found '$(GOOS)'"; exit 1; fi
 	$(MAKE) compile GOOS=$(GOOS) GOARCH=$(GOARCH)
-
-package_for: compile_for
-	@echo "=== $(INTEGRATION) === [ package ]: Packaging..."
-	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin
-	mkdir -p $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d
-	mkdir -p $(TARBALL_DIR)
-	cp ./bin/$(INTEGRATION) $(PACKAGE_DIR)/var/db/newrelic-infra/newrelic-integrations/bin/$(INTEGRATION)
-	cp newrelic-nri-ecs-config.yml $(PACKAGE_DIR)/var/db/newrelic-infra/integrations.d/nri-ecs-config.yml
-	tar -czf $(TARBALL_DIR)/$(FILENAME_TARBALL) -C $(PACKAGE_DIR) ./
-
-release_tarball_package_for: package_for
-	@echo "=== $(INTEGRATION) === [ package ]: Releasing..."
-	aws s3 cp $(TARBALL_DIR)/$(FILENAME_TARBALL) ${S3_TARBALL_FOLDER}/$(FILENAME_TARBALL)
-	gh release upload "v$(RELEASE_VERSION)" "$(TARBALL_DIR)/$(FILENAME_TARBALL)" --repo "github.com/newrelic/nri-ecs" --clobber
+	DOCKER_BUILDKIT=1 docker build --rm=true -t $(NRI_ECS_IMAGE_REPO) .	
 
 test:
 	@echo "=== $(INTEGRATION) === [ test ]: Running unit tests..."
-	@go test -race $(GO_PKGS)
+	@go test -race ./...
 
 debug-mode:
 	@echo "=== $(INTEGRATION) === [ debug ]: Running debug mode..."
@@ -121,4 +115,4 @@ buildThirdPartyNotice:
 # configurator goals
 include $(CURDIR)/configurator/terraform.mk
 
-.PHONY: all build clean compile test buildLicenseNotice
+.PHONY: all build clean image compile compile-multiarch test buildLicenseNotice
