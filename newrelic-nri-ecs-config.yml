@@ -1,6 +1,0 @@
-integrations:
-  - name: nri-ecs
-    when:
-      env_exists:
-        ENABLE_NRI_ECS: "true"
-    interval: 15s
