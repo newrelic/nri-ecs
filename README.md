@@ -4,7 +4,9 @@
 
 This integration collects metrics from ECS clusters and containers in AWS.
 
-By itself, this integration just collects metadata of the ECS cluster, the real value comes when combined with the [nri-docker][1] integration. The recomended approach is to run the [infrastructure-bundle][3] which includes the infrastructure agent and both integrations.
+By itself, this integration just collects metadata of the ECS cluster, that is used to decorate all the metrics collected by the [nri-docker][1] integration , the Infrastructure Agent and the on host integrations that has been activated.
+
+This repo generates the [newrelic/nri-ecs][5] image which is based on the [infrastructure-bundle][3] that contains the Agent and the others on host integrations.
 
 ## Table of contents
 
@@ -23,18 +25,18 @@ By itself, this integration just collects metadata of the ECS cluster, the real 
 
 ## Installation
 
-Create a task definition that runs the [infrastructure-bundle][3] in your ECS cluster. In our [docs][2] you can find information on how to
+Create a task definition that runs [newrelic/nri-ecs][5] in your ECS cluster. In our [docs][2] you can find information on how to
 set up your infrastructure automatically with CloudFormation, or generating the task definition via command line or manually.
 
 ## Building
 
-To generate the integration binary execute:
+To generate the integration image execute:
 
 ```
-$ make compile
+$ make image NRI_ECS_IMAGE_REPO=myrepo/nri-ecs
 ```
 
-This will generate the binary `./bin/nri-ecs`.
+This will generate the integration docker image for Linux amd64.
 
 # Development
 
@@ -111,3 +113,4 @@ The New Relic integration for ECS also uses source code from third party librari
 [2]: https://docs.newrelic.com/docs/integrations/elastic-container-service-integration/installation/install-ecs-integration
 [3]: https://github.com/newrelic/infrastructure-bundle/blob/master/build/versions#L26
 [4]: https://golang.org/pkg/testing/
+[5]: https://hub.docker.com/r/newrelic/nri-ecs
