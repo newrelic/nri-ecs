@@ -7,6 +7,9 @@ RELEASE_VERSION ?= "dev" # Populated by release packages or manifest workflows.
 RELEASE_TAG :=
 RELEASE_STRING := ${RELEASE_VERSION}${RELEASE_TAG}
 
+COMMIT ?= $(shell git rev-parse HEAD || echo "unknown")
+LD_FLAGS ?= "-X 'main.integrationVersion=$(RELEASE_VERSION)' -X 'main.gitCommit=$(COMMIT)'"
+
 INFRA_BUNDLE_VERSION ?= "dev" # Populated by release manifest workflow.
 INFRA_BUNDLE_IMAGE := newrelic/infrastructure-bundle:$(INFRA_BUNDLE_VERSION)
 
@@ -81,11 +84,11 @@ clean:
 
 compile:
 	@echo "=== $(INTEGRATION) === [ compile ]: Building $(BINARY_NAME)..."
-	@go build -o bin/$(BINARY_NAME) ./cmd
+	@go build -o bin/$(BINARY_NAME) -ldflags $(LD_FLAGS) ./cmd
 
 compile_for:
 	@echo "=== $(INTEGRATION) === [ compile ]: Building..."
-	env GOOS=$(OS) GOARCH=$(ARCH) go build -o ./bin/$(INTEGRATION) ./cmd
+	$(MAKE) compile GOOS=$(GOOS) GOARCH=$(GOARCH)
 
 package_for: compile_for
 	@echo "=== $(INTEGRATION) === [ package ]: Packaging..."
@@ -109,7 +112,7 @@ debug-mode:
 	@echo "=== $(INTEGRATION) === [ debug ]: Running debug mode..."
 	@-docker rm -f nri-ecs
 	@docker build -t fsi/nri-ecs:debug -f Dockerfile.debug .
-	@docker run -i -t -d --name nri-ecs -v /var/run/docker.sock:/var/run/docker.sock fsi/nri-ecs:debug
+	@docker run -i -t -d --name nri-ecs -v /var/run/docker.sock:/var/run/docker.sock -p 80:80 fsi/nri-ecs:debug
 	@docker exec -it nri-ecs sh
 
 buildThirdPartyNotice:

@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"runtime"
 	"time"
 
 	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
@@ -14,14 +16,20 @@ import (
 	"github.com/newrelic/nri-ecs/internal/infra"
 )
 
+const (
+	integrationName = "com.newrelic.ecs"
+)
+
 var (
-	integrationName    = "com.newrelic.ecs"
-	integrationVersion = "1.3.1"
+	// Variables populated on compilation.
+	integrationVersion = "0.0.0"
+	gitCommit          = ""
 )
 
 type ArgumentList struct {
 	sdkArgs.DefaultArgumentList
-	Fargate bool `default:"false" help:"If running on fargate"`
+	Fargate     bool `default:"false" help:"If running on fargate"`
+	ShowVersion bool `default:"false" help:"Print build information and exit"`
 }
 
 func main() {
@@ -30,6 +38,14 @@ func main() {
 	ecsIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to create integration: %v", err))
+	}
+
+	if args.ShowVersion {
+		fmt.Printf(
+			"New Relic ECS integration Version: %s, Platform: %s, GoVersion: %s, GitCommit: %s\n",
+			integrationVersion,
+			fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH), runtime.Version(), gitCommit)
+		os.Exit(0)
 	}
 
 	if err := Run(ecsIntegration, args); err != nil {
