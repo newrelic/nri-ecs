@@ -2,6 +2,9 @@
     "executionRoleArn": "<YOUR_TASK_EXECUTION_ROLE>",
     "networkMode": "awsvpc",
     "requiresCompatibilities": ["FARGATE"],
+    "runtimePlatform": {
+      "cpuArchitecture": "X86_64"
+    },
     "cpu": "256",
     "memory": "512",
     "containerDefinitions": [
