@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ecsClusterEventType = "EcsClusterSample"
+	EcsClusterEventType = "EcsClusterSample"
 )
 
 type ClusterMetadata struct {
@@ -43,7 +43,7 @@ func PopulateIntegration(i *integration.Integration, cm ClusterMetadata) error {
 		log.Error("unable to register cluster inventory: %v", err)
 	}
 
-	if _, err = newClusterHeartbeatMetricSet(cm.Name, cm.ARN, clusterEntity); err != nil {
+	if _, err = newClusterHeartbeatMetricSet(cm.Name, cm.ARN, cm.Region, cm.LaunchType, clusterEntity); err != nil {
 		log.Error("unable to create metrics for cluster: %v", err)
 	}
 
@@ -64,7 +64,7 @@ func newClusterEntity(clusterARN string, i *integration.Integration) (*integrati
 	return clusterEntity, nil
 }
 
-func addClusterMetadataToLocalEntityInventory(clusterName, clusterARN, awsRegion string, launchType string, integration *integration.Integration) error {
+func addClusterMetadataToLocalEntityInventory(clusterName, clusterARN, awsRegion, launchType string, integration *integration.Integration) error {
 	entity := integration.LocalEntity()
 	err := entity.SetInventoryItem("host", "ecsClusterName", clusterName)
 	if err != nil {
@@ -103,13 +103,35 @@ func addClusterInventory(clusterName, clusterARN string, entity *integration.Ent
 	return nil
 }
 
-func newClusterHeartbeatMetricSet(clusterName string, clusterARN string, entity *integration.Entity) (*metric.Set, error) {
-	metricSet := entity.NewMetricSet(ecsClusterEventType)
+func newClusterHeartbeatMetricSet(clusterName, clusterARN, awsRegion, launchType string, entity *integration.Entity) (*metric.Set, error) {
+	metricSet := entity.NewMetricSet(EcsClusterEventType)
 	var err error
 
 	err = metricSet.SetMetric("clusterName", clusterName, metric.ATTRIBUTE)
 	if err != nil {
 		return nil, err
+	}
+
+	if launchType == metadata.EcsFargateLaunchType {
+		err = metricSet.SetMetric("ecsClusterName", clusterName, metric.ATTRIBUTE)
+		if err != nil {
+			return nil, err
+		}
+
+		err = metricSet.SetMetric("ecsLaunchType", launchType, metric.ATTRIBUTE)
+		if err != nil {
+			return nil, err
+		}
+
+		err = metricSet.SetMetric("awsRegion", awsRegion, metric.ATTRIBUTE)
+		if err != nil {
+			return nil, err
+		}
+
+		err = metricSet.SetMetric("ecsClusterArn", clusterARN, metric.ATTRIBUTE)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = metricSet.SetMetric("arn", clusterARN, metric.ATTRIBUTE)
