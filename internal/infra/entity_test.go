@@ -13,12 +13,11 @@ import (
 )
 
 func Test_PopulateIntegration(t *testing.T) {
-	t.Parallel()
 	i, _ := integration.New("test", "dev")
 	taskMetadata := metadata.TaskResponse{
 		Cluster:    "ecs-local-cluster",
 		TaskARN:    "arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster",
-		LaunchType: "FARGATE",
+		LaunchType: metadata.EcsEC2LaunchType,
 	}
 
 	t.Run("when_clusterMetadata_is_complete", func(t *testing.T) {
@@ -72,9 +71,48 @@ func Test_PopulateIntegration(t *testing.T) {
 			assert.Len(t, clusterEntity.Metrics, 1)
 
 			metrics := clusterEntity.Metrics[0].Metrics
+			require.Len(t, metrics, 3)
 
 			assert.Equal(t, clusterMetadata.Name, metrics["clusterName"])
 			assert.Equal(t, clusterMetadata.ARN, metrics["arn"])
+			assert.Equal(t, infra.EcsClusterEventType, metrics["event_type"])
+		})
+	})
+}
+
+func Test_PopulateIntegrationFargate(t *testing.T) {
+	i, _ := integration.New("test", "dev")
+	taskMetadata := metadata.TaskResponse{
+		Cluster:    "ecs-local-cluster",
+		TaskARN:    "arn:aws:ecs:us-west-2:xxxxxxxx:cluster/ecs-local-cluster",
+		LaunchType: metadata.EcsFargateLaunchType,
+	}
+
+	t.Run("when_clusterMetadata_is_complete_and_is_fargate", func(t *testing.T) {
+		t.Parallel()
+
+		clusterMetadata := infra.NewClusterMetadata(taskMetadata, true)
+		assert.NoError(t, infra.PopulateIntegration(i, clusterMetadata))
+
+		// The extra entity is the LocalEntity.
+		require.Len(t, i.Entities, 2)
+		clusterEntity := i.Entities[0]
+
+		t.Run("add_heartbeat_metric_set_has_all_metrics", func(t *testing.T) {
+			t.Parallel()
+
+			assert.Len(t, clusterEntity.Metrics, 1)
+
+			metrics := clusterEntity.Metrics[0].Metrics
+			require.Len(t, metrics, 7)
+
+			assert.Equal(t, clusterMetadata.Name, metrics["clusterName"])
+			assert.Equal(t, clusterMetadata.Name, metrics["ecsClusterName"])
+			assert.Equal(t, clusterMetadata.LaunchType, metrics["ecsLaunchType"])
+			assert.Equal(t, clusterMetadata.Region, metrics["awsRegion"])
+			assert.Equal(t, clusterMetadata.ARN, metrics["ecsClusterArn"])
+			assert.Equal(t, clusterMetadata.ARN, metrics["arn"])
+			assert.Equal(t, infra.EcsClusterEventType, metrics["event_type"])
 		})
 	})
 }
