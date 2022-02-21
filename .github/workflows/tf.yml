@@ -16,6 +16,7 @@ jobs:
           path: src/github.com/${{ env.ORIGINAL_REPO_NAME }}
       - uses: hashicorp/setup-terraform@v1
       - name: Terraform Init
+        working-directory: src/github.com/${{ env.ORIGINAL_REPO_NAME }}/terraform
         id: init
         run: terraform init
       - name: Terraform Plan
