@@ -15,6 +15,10 @@ jobs:
         with:
           path: src/github.com/${{ env.ORIGINAL_REPO_NAME }}
       - uses: hashicorp/setup-terraform@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Terraform Init
         working-directory: src/github.com/${{ env.ORIGINAL_REPO_NAME }}/terraform
         id: init
