@@ -12,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: src/github.com/${{ env.ORIGINAL_REPO_NAME }}
       - uses: hashicorp/setup-terraform@v1
       - name: Terraform Init
         id: init
         run: terraform init
       - name: Terraform Plan
-        working-directory: src/github.com/${{ env.ORIGINAL_REPO_NAME }}/terraform/
+        working-directory: src/github.com/${{ env.ORIGINAL_REPO_NAME }}/terraform
         id: plan
         run: terraform plan
