@@ -7,6 +7,7 @@ data "template_file" "nri-ecs-task-definition-template" {
 
 resource "aws_ecs_task_definition" "nri-ecs-task-definition" {
   family                = "nri-ecs"
+  execution_role_arn    = aws_iam_role.ecs-task-role.arn
   container_definitions = data.template_file.nri-ecs-task-definition-template.rendered
 }
 

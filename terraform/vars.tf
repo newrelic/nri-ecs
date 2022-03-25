@@ -15,5 +15,5 @@ variable "ECS_INSTANCE_TYPE" {
 
 variable "SSH_KEY_NAME" {
   description = "Which SSH key to use"
-  default     = "coreint"
+  default     = "coreint-ecs"
 }

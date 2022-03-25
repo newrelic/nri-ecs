@@ -50,13 +50,22 @@ policy = <<EOF
         {
             "Effect": "Allow",
             "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents",
-                "logs:DescribeLogStreams"
+               "logs:CreateLogGroup",
+               "logs:CreateLogStream",
+               "logs:PutLogEvents",
+               "logs:DescribeLogStreams"
             ],
             "Resource": [
                 "arn:aws:logs:*:*:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:eu-central-1:801306408012:secret:CoreIntNewRelicLicenseKeySecret-3A1nPy"
             ]
         }
     ]
@@ -71,22 +80,77 @@ resource "aws_iam_role_policy_attachment" "ecs_ecs" {
 }
 
 
-# ecs service role
-resource "aws_iam_role" "ecs-service-role" {
-name = "ecs-service-role"
-assume_role_policy = <<EOF
+# ecs task role
+resource "aws_iam_role" "ecs-task-role" {
+  name = "ecs-task-role"
+  assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ecs.amazonaws.com"
+        "Service": "ecs-tasks.amazonaws.com"
       },
       "Effect": "Allow",
       "Sid": ""
     }
   ]
+}
+EOF
+
+}
+
+resource "aws_iam_instance_profile" "ecs-task-role" {
+  name = "ecs-task-role"
+  role = aws_iam_role.ecs-task-role.name
+}
+
+resource "aws_iam_role_policy" "ecs-task-role-policy" {
+name   = "ecs-task-role-policy"
+role   = aws_iam_role.ecs-task-role.id
+policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+              "ecs:CreateCluster",
+              "ecs:DeregisterContainerInstance",
+              "ecs:DiscoverPollEndpoint",
+              "ecs:Poll",
+              "ecs:RegisterContainerInstance",
+              "ecs:StartTelemetrySession",
+              "ecs:Submit*",
+              "ecs:StartTask",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+               "logs:CreateLogGroup",
+               "logs:CreateLogStream",
+               "logs:PutLogEvents",
+               "logs:DescribeLogStreams"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:eu-central-1:801306408012:secret:CoreIntNewRelicLicenseKeySecret-3A1nPy"
+            ]
+        }
+    ]
 }
 EOF
 
