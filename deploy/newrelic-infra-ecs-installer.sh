@@ -61,7 +61,6 @@ resources:
     Policies attached to the role (All launch types):
 
       * NewRelicSSMLicenseKeyReadAccess (created by the installer).
-      * AmazonEC2ContainerServiceforEC2Role
       * AmazonECSTaskExecutionRolePolicy
 
   - Registers the "newrelic-infra" ECS task definition. (EC2/EXTERNAL launch type)
@@ -412,7 +411,7 @@ main() {
   local task_execution_role="NewRelicECSTaskExecutionRole"
   local license_key_parameter_name="/newrelic-infra/ecs/license-key"
   local license_key_access_policy_name="NewRelicSSMLicenseKeyReadAccess"
-  local policies_arns=("arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role" "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy")
+  local policies_arns=("arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy")
   local task_definition_url="https://download.newrelic.com/infrastructure_agent/integrations/ecs/newrelic-infra-ecs-ec2-latest.json"
   local task_definition_file="newrelic-infra-task-definition.json"
   local service_name="newrelic-infra"
