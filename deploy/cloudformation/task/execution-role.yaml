@@ -37,7 +37,6 @@ Resources:
             Action: "sts:AssumeRole"
       Description: "ECS task execution role for New Relic infrastructure"
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
         - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
         - !Ref NewRelicLicenseKeySecretReadAccess
 
