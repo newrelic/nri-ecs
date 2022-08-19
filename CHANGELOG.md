@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 1.9.0
 - Update go version to 1.18
-- Update to infrastructure-bundle 2.xxxx
+- Update to infrastructure-bundle 2.8.23
 
 ## 1.8.1
 - Update to infrastructure-bundle 2.8.21
