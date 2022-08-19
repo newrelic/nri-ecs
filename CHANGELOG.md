@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.9.0
+- Update go version to 1.18
+- Update to infrastructure-bundle 2.8.23
+
+## 1.8.1
+- Update to infrastructure-bundle 2.8.21
+- bump github.com/stretchr/testify from 1.7.1 to 1.8.0
+- bump github.com/newrelic/infra-integrations-sdk from 3.7.2+incompatible to 3.7.3+incompatible
+
+## 1.8.0
+- Update to infrastructure-bundle 2.8.9
+- bump github.com/stretchr/testify from 1.7.0 to 1.7.1
+- bump github.com/newrelic/infra-integrations-sdk from 3.7.1+incompatible to 3.7.2+incompatible
+- removes container service role from policy on deployment scripts
+
+## 1.7.0
+- Update to infrastructure-bundle 2.8.7
+
 ## 1.6.0
 - Update to infrastructure-bundle 2.8.2
 

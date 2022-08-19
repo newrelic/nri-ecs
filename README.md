@@ -15,12 +15,12 @@ This repo generates the [newrelic/nri-ecs][5] image which is based on the [infra
 - [Installation](#installation)
 - [Building](#building)
 - [Support](#support)
-- [Contributing](#contributing)
+- [Contributing](#contribute)
 - [License](#license)
 
 ## Requirements
 
-- Go 1.17
+- Go 1.18
 - ECS agent version 1.21 or greater.
 
 ## Installation
