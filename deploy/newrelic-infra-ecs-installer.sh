@@ -72,7 +72,7 @@ USAGE:
   $0 ARGS [OPTIONS]
 
 ARGS:
-  -c Cluster name.
+  -c Cluster name Arn. Es: `arn:aws:ecs:us-west-1:0000000000000:cluster/example`.
   -l New Relic license key. Not required for uninstall.
   -n Task definition family name (defaults to newrelic-infra).
 
@@ -311,7 +311,7 @@ update_service() {
   local service_name=$2
   local task_definition=$3
   local launch_type=$4
-  aws ecs update-service --cluster "$cluster_name" --service "$service_name" --task-definition "$task_definition" --launch-type "$launch_type" >>/dev/null
+  aws ecs update-service --cluster "$cluster_name" --service "$service_name" --task-definition "$task_definition" >>/dev/null
 }
 
 create_task_execution_role() {
