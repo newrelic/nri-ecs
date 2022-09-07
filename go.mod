@@ -1,6 +1,6 @@
 module github.com/newrelic/nri-ecs
 
-go 1.18
+go 1.19
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -14,5 +14,5 @@ require (
 
 require (
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rogpeppe/go-internal v1.8.1 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 )

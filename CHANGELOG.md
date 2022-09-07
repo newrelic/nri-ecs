@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.9.3
+- Update to infrastructure-bundle 2.8.26, dependencies and go version
+- Fixed the installation script removing --launch-type for the update
+
 ## 1.9.2
 - Update to infrastructure-bundle 2.8.25
 
