@@ -72,7 +72,7 @@ USAGE:
   $0 ARGS [OPTIONS]
 
 ARGS:
-  -c Cluster name Arn. Es: `arn:aws:ecs:us-west-1:0000000000000:cluster/example`.
+  -c Cluster name Arn. Example: `arn:aws:ecs:us-west-1:0000000000000:cluster/example`.
   -l New Relic license key. Not required for uninstall.
   -n Task definition family name (defaults to newrelic-infra).
 
