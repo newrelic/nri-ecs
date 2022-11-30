@@ -7,7 +7,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
