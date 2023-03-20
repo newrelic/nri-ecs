@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 )
 
 require (
