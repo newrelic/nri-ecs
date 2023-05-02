@@ -33,3 +33,6 @@ Temporary Items
 deploy/task_definition.json
 deploy/newrelic-infra-task-definition.*
 package/
+
+# Release toolkit
+CHANGELOG.partial.md

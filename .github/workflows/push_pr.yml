@@ -1,0 +1,27 @@
+name: Push/PR
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  static-analysis:
+    name: Run all static analysis checks
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check if CHANGELOG is valid
+        uses: newrelic/release-toolkit/validate-markdown@v1
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+      - name: Run unit tests
+        run: make test
