@@ -1,4 +1,0 @@
-# This file is a dictionary used by the [link-dependencies](https://github.com/newrelic/release-toolkit/tree/main/link-dependencies) action.
-
-dictionary:
-  newrelic/nri-ecs: "https://github.com/newrelic/nri-ecs/releases/tag/{{.To}}"

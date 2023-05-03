@@ -1,8 +1,8 @@
-name: Create release
+name: Release
 
 on:
   release:
-    types: [released]
+    types: [prereleased, released]
 
 jobs:
   release-image-manifest:
@@ -29,6 +29,10 @@ jobs:
         run: |
           make compile-multiarch RELEASE_VERSION=$NRI_VERSION
 
+      - if: ${{ github.event.release.prerelease }}
+        run: |
+          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}-pre" >> $GITHUB_ENV
+
       - uses: docker/setup-qemu-action@v1
       - uses: docker/setup-buildx-action@v1
 
@@ -44,10 +48,15 @@ jobs:
             .
 
       - name: Push :latest image
+        if: ${{ ! github.event.release.prerelease }}
         run: |
           docker buildx build --push --platform=$DOCKER_PLATFORMS \
             -t $DOCKER_IMAGE_NAME:latest \
             .
+
+      - if: ${{ github.event.release.prerelease }}
+        run: |
+          echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
 
       - uses: aws-actions/configure-aws-credentials@v1
         with:
