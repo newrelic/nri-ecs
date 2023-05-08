@@ -13,10 +13,10 @@ jobs:
       DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/arm" # Must be consistent with the matrix make compile-multiarch.
       S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
+          go-version-file: go.mod
 
       - name: Generate version from tag
         run: |
@@ -24,7 +24,7 @@ jobs:
           NRI_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
           echo "NRI_VERSION=$NRI_VERSION" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_TAG=$NRI_VERSION" >> $GITHUB_ENV
-      
+
       - name: Build integration
         run: |
           make compile-multiarch RELEASE_VERSION=$NRI_VERSION
@@ -46,7 +46,7 @@ jobs:
           docker buildx build --push --platform=$DOCKER_PLATFORMS \
             -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
             .
-      
+
       - name: Push :latest image
         if: ${{ ! github.event.release.prerelease }}
         run: |
