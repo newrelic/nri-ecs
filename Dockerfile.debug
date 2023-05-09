@@ -10,7 +10,7 @@ COPY . .
 ENV CGO_ENABLED=0
 RUN make compile
 
-FROM amazon/amazon-ecs-local-container-endpoints:1.4.0-amd64
+FROM amazon/amazon-ecs-local-container-endpoints:1.4.2-amd64
 
 COPY --from=build /go/src/github.com/newrelic/nri-ecs/bin/nri-ecs /bin/
 ENV ECS_CONTAINER_METADATA_URI="http://localhost/v3"
