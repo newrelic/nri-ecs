@@ -1,17 +1,13 @@
-
-   
 {
-    "extends": [
-      "config:base",
-      // Disable the creation of this issue that renovate updates with the pending issue we follow with Zenhub:
-      // https://github.com/newrelic/nri-ecs/issues/54
-      ":disableDependencyDashboard"
-    ],
-    "enabledManagers": [
-      // Enable only the regex manager (for Dockerfile base image bumping). Go dependencies are managed by Dependabot.
-      "regex"
-    ],
-    "regexManagers": [
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    // Disable the creation of this issue that renovate updates with pending PRs. We do that with Jira.
+    // e.g.: https://github.com/newrelic/nri-kubernetes/issues/205
+    ":disableDependencyDashboard"
+  ],
+  "labels": ["dependencies"],
+  "regexManagers": [
       {
         // Parse bundle image version from `BASE_IMAGE` ARG in Dockerfile.
         "fileMatch": [
@@ -22,6 +18,20 @@
           "BASE_IMAGE=(?<depName>.+):(?<currentValue>.+)"
         ]
       }
-    ]
-  }
-  
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      // Exclude any dependencies which are pre-1.0.0 because those can make breaking changes at any time
+      // according to the SemVer spec.
+      "matchCurrentVersion": "!/^(0|v0)/",
+      // Renovate will do the following when detecting a new dependency bump:
+      // - If it's one of the exclusions it will create a PR (major, 0. or v0. and sarama)
+      // - In case it matches one of the rest cases, it will create a branch that will be auto merged if tests pass.
+      // - If in the previous step tests fail, a PR will be created instead of merging the branch.
+      "automerge": true,
+      "automergeType": "branch",
+      "pruneBranchAfterAutomerge": true
+    }
+  ]
+}
