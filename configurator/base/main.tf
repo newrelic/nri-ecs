@@ -35,7 +35,7 @@ locals {
 # Create the ECS cluster
 module "ecs" {
   source  = "terraform-aws-modules/ecs/aws"
-  version = "~> 2.0"
+  version = "~> 5.0"
 
   name = local.cluster_name
   tags = local.common_tags
