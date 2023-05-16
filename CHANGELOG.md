@@ -10,8 +10,15 @@ Unreleased section should follow
 
 ## Unreleased
 
-### Enhancement
+## v1.10.0 - 2023-05-16
+
+### 🚀 Enhancements
 - Add the automatic release of the integration
+
+### ⛓️ Dependencies
+- Updated amazon/amazon-ecs-local-container-endpoints to v1.4.2
+- Updated golang to v1.20
+- Updated newrelic/infrastructure-bundle to v3.1.8 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/3.1.8)
 
 ## 1.9.7
 - Update to infrastructure-bundle 2.8.36 and dependencies
