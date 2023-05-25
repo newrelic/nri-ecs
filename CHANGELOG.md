@@ -10,6 +10,12 @@ Unreleased section should follow
 
 ## Unreleased
 
+## v1.10.2 - 2023-05-25
+
+### ⛓️ Dependencies
+- Updated github.com/stretchr/testify to v1.8.3 - [Changelog 🔗](https://github.com/stretchr/testify/releases/tag/v1.8.3)
+- Updated newrelic/infrastructure-bundle to v3.2.1 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/3.2.1)
+
 ## v1.10.1 - 2023-05-18
 
 ### ⛓️ Dependencies
