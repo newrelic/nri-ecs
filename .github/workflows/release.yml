@@ -67,3 +67,15 @@ jobs:
       - name: Upload configuration files to https://download.newrelic.com
         run: |
           make upload_manifests RELEASE_VERSION=$NRI_VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
+
+  release-image-manifest:
+    if: ${{ always() && failure() }}
+    needs: [release-image-manifest]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify failure via Slack
+        uses: archive/github-actions-slack@master
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.COREINT_SLACK_TOKEN }}
+          slack-channel: ${{ secrets.COREINT_SLACK_CHANNEL }}
+          slack-text: "❌ `${{ env.REPO_FULL_NAME }}`: [image release failed](${{ github.server_url }}/${{ env.REPO_FULL_NAME }}/actions/runs/${{ github.run_id }})."
