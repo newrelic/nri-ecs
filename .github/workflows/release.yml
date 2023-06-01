@@ -71,7 +71,7 @@ jobs:
         run: |
           make upload_manifests RELEASE_VERSION=$NRI_VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
 
-  release-image-manifest:
+  notify-failure:
     if: ${{ always() && failure() }}
     needs: [release-image-manifest]
     runs-on: ubuntu-latest
