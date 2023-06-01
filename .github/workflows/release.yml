@@ -5,7 +5,7 @@ on:
     types: [prereleased, released]
 
 env:
-  ORIGINAL_REPO_NAME: ${{ github.event.repository.full_name }}
+  ORIGINAL_REPO_NAME: "newrelic/nri-ecs"
 
 jobs:
   release-image-manifest:
