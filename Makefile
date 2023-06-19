@@ -77,10 +77,9 @@ clean:
 	@echo "=== $(INTEGRATION) === [ clean ]: Removing binaries and temporary files..."
 	@rm -rfv bin package
 
-compile: CGO_ENABLED=0
 compile:
 	@echo "=== $(INTEGRATION) === [ compile ]: Building $(BINARY_NAME)..."
-	@go build -o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH) -ldflags $(LD_FLAGS) ./cmd
+	@(CGO_ENABLED=0 go build -o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH) -ldflags $(LD_FLAGS) ./cmd)
  
 compile-multiarch:
 	$(MAKE) compile GOOS=linux GOARCH=amd64
