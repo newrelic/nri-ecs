@@ -61,7 +61,7 @@ jobs:
         run: |
           echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
 
-      - uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
