@@ -16,7 +16,7 @@ jobs:
       DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/arm" # Must be consistent with the matrix make compile-multiarch.
       S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
