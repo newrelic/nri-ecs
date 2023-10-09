@@ -51,7 +51,7 @@ terraform {
 
 module "this" {
   source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 3.4"
+  version = "~> 7.0"
 
   name = local.ec2_resources_name
 
