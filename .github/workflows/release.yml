@@ -17,7 +17,7 @@ jobs:
       S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
