@@ -3,7 +3,7 @@ module github.com/newrelic/nri-ecs
 go 1.20
 
 require (
-	github.com/newrelic/infra-integrations-sdk v3.8.0+incompatible
+	github.com/newrelic/infra-integrations-sdk v3.8.2+incompatible
 	github.com/stretchr/testify v1.8.4
 )
 
