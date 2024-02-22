@@ -10,6 +10,12 @@ Unreleased section should follow
 
 ## Unreleased
 
+## v1.10.12 - 2024-02-22
+
+### ⛓️ Dependencies
+- Updated github.com/newrelic/infra-integrations-sdk to v3.8.2+incompatible
+- Updated newrelic/infrastructure-bundle to v3.2.30 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.30)
+
 ## v1.10.11 - 2024-02-08
 
 ### ⛓️ Dependencies
