@@ -1,6 +1,7 @@
 integrations:
   - name: nri-docker
     env:
+      # Enables fetching metrics from Docker API when running on a host with cgroups v2
       USE_DOCKER_API: true
     when:
       feature: docker_enabled
