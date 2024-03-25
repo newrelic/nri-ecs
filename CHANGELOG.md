@@ -13,6 +13,27 @@ Unreleased section should follow
 ### enhancement
 - Adds support for EC2 instances running with cgroups v2 by scraping metrics from DockerApi.
 
+## v1.10.15 - 2024-03-21
+
+### ⛓️ Dependencies
+- Updated newrelic/infrastructure-bundle to v3.2.34 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.34)
+
+## v1.10.14 - 2024-03-14
+
+### ⛓️ Dependencies
+- Updated newrelic/infrastructure-bundle to v3.2.33 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.33)
+
+## v1.10.13 - 2024-03-07
+
+### ⛓️ Dependencies
+- Updated newrelic/infrastructure-bundle to v3.2.32 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.32)
+
+## v1.10.12 - 2024-02-22
+
+### ⛓️ Dependencies
+- Updated github.com/newrelic/infra-integrations-sdk to v3.8.2+incompatible
+- Updated newrelic/infrastructure-bundle to v3.2.30 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.30)
+
 ## v1.10.11 - 2024-02-08
 
 ### ⛓️ Dependencies
