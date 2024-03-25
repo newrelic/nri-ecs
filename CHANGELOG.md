@@ -10,8 +10,13 @@ Unreleased section should follow
 
 ## Unreleased
 
-### enhancement
+## v1.11.0 - 2024-03-25
+
+### 🚀 Enhancements
 - Adds support for EC2 instances running with cgroups v2 by scraping metrics from DockerApi.
+
+### ⛓️ Dependencies
+- Updated newrelic/infrastructure-bundle to v3.2.36 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.36)
 
 ## v1.10.15 - 2024-03-21
 
