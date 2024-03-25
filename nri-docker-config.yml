@@ -1,0 +1,15 @@
+integrations:
+  - name: nri-docker
+    env:
+      # Enables fetching metrics from Docker API when running on a host with cgroups v2
+      USE_DOCKER_API: true
+    when:
+      feature: docker_enabled
+      file_exists: /var/run/docker.sock
+    interval: 15s
+  - name: nri-docker
+    when:
+      feature: docker_enabled
+      env_exists:
+        FARGATE: "true"
+    interval: 15s

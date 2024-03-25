@@ -10,6 +10,9 @@ Unreleased section should follow
 
 ## Unreleased
 
+### enhancement
+- Adds support for EC2 instances running with cgroups v2 by scraping metrics from DockerApi.
+
 ## v1.10.15 - 2024-03-21
 
 ### ⛓️ Dependencies

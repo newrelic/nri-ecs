@@ -119,7 +119,4 @@ buildThirdPartyNotice:
 rt-update-changelog:
 	curl "https://raw.githubusercontent.com/newrelic/release-toolkit/v1/contrib/ohi-release-notes/run.sh" | bash -s -- $(filter-out $@,$(MAKECMDGOALS))
 
-# configurator goals
-include $(CURDIR)/configurator/terraform.mk
-
 .PHONY: all build clean image compile compile-multiarch test buildLicenseNotice

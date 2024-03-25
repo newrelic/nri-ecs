@@ -14,8 +14,10 @@ ADD --chmod=755 bin/nri-ecs-${TARGETOS}-${TARGETARCH} /var/db/newrelic-infra/new
 RUN mv /var/db/newrelic-infra/newrelic-integrations/bin/nri-ecs-${TARGETOS}-${TARGETARCH} \
        /var/db/newrelic-infra/newrelic-integrations/bin/nri-ecs
 
+RUN rm /etc/newrelic-infra/integrations.d/docker-config.yml
+
 # Activates the nri-ecs integration in the image by default.
-# nri-docker comes already activated (with 'when conditions') on the newrelic/infrastructure image.
 # Some Envars needed to configure the integration are set in the deployment task
 # and added to NRIA_PASSTHROUGH_ENVIRONMENT.
 ADD nri-ecs-config.yml /var/db/newrelic-infra/integrations.d/nri-ecs-config.yml
+ADD nri-docker-config.yml /var/db/newrelic-infra/integrations.d/nri-docker-config.yml
