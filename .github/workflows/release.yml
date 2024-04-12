@@ -99,8 +99,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reflect failure in release title
+      - if: ${{ github.event.release.prerelease }}
+        name: Reflect failure in pre-release title
         env:
           GH_TOKEN: "${{ secrets.COREINT_BOT_TOKEN }}"
         run: |
           gh release edit ${{ github.event.release.tag_name  }} --title "${{ github.event.release.tag_name }} (pre-release-failure)"
+      - if: ${{ ! github.event.release.prerelease }}
+        name: Reflect failure in release title
+        env:
+          GH_TOKEN: "${{ secrets.COREINT_BOT_TOKEN }}"
+        run: |
+          gh release edit ${{ github.event.release.tag_name  }} --title "${{ github.event.release.tag_name }} (release-failure)"
