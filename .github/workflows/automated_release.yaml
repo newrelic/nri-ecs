@@ -1,0 +1,13 @@
+name: Automated release creation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * 4"
+
+jobs:
+  release_management:
+    uses: newrelic/coreint-automation/.github/workflows/reusable_release_automation.yaml@v3
+    secrets: inherit
+    with:
+      rt-included-files: go.mod,go.sum,Dockerfile
