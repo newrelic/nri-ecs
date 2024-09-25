@@ -10,7 +10,9 @@ Unreleased section should follow
 
 ## Unreleased
 
-### bugfix
+## v1.11.16 - 2024-09-25
+
+### 🐞 Bug fixes
 - Updated newrelic/infrastructure-bundle to v3.2.55
 
 ## v1.11.15 - 2024-09-19
