@@ -10,6 +10,10 @@ Unreleased section should follow
 
 ## Unreleased
 
+### enhancements
+
+- Upgrade integrations SDK so the interval is variable and allows intervals up to 5 minutes
+
 ## v1.11.16 - 2024-09-25
 
 ### 🐞 Bug fixes
