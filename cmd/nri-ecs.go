@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
-	"github.com/newrelic/infra-integrations-sdk/integration"
-	"github.com/newrelic/infra-integrations-sdk/log"
+	sdkArgs "github.com/newrelic/infra-integrations-sdk/v3/args"
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 
 	"github.com/newrelic/nri-ecs/internal/ecs"
 	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
