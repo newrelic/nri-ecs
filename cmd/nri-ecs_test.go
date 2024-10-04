@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v4/integration"
 	main "github.com/newrelic/nri-ecs/cmd"
 	"github.com/newrelic/nri-ecs/cmd/testdata"
 	"github.com/newrelic/nri-ecs/internal/ecs/metadata"
