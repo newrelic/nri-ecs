@@ -10,12 +10,12 @@ Unreleased section should follow
 
 ## Unreleased
 
-### dependency
+## v1.12.0 - 2024-10-10
 
+### dependency
 - Upgrade go to 1.23.2
 
-### enhancements
-
+### 🚀 Enhancements
 - Upgrade integrations SDK so the interval is variable and allows intervals up to 5 minutes
 
 ## v1.11.16 - 2024-09-25
