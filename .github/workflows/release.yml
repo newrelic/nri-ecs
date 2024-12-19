@@ -19,6 +19,9 @@ jobs:
         # Version validation as in original workflow
         echo "${{ github.event.release.tag_name }}" | grep -E '^v[0-9.]*[0-9]$'
         
+        # Extract version from tag name
+        VERSION="${{ github.event.release.tag_name }}"
+        
         # Set S3 base folder with /test for pre-releases
         if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
           export S3_BASE_FOLDER="s3://nr-downloads-main/infrastructure_agent/test"
@@ -28,10 +31,22 @@ jobs:
         
         # Build and upload steps with correct version handling
         make compile-multiarch RELEASE_VERSION=$VERSION
+
+        docker buildx build --push --platform=$DOCKER_PLATFORMS \
+          -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
+          .
+        
+        # Only push latest tag for full releases, not prereleases
+        if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
+          docker buildx build --push --platform=$DOCKER_PLATFORMS \
+            -t $DOCKER_IMAGE_NAME:latest \
+            .
+        fi
         
         # RELEASE_VERSION stays without suffix, only NRI_ECS_IMAGE_TAG gets the suffix
         make upload_manifests RELEASE_VERSION=$VERSION NRI_ECS_IMAGE_TAG=$VERSION$TAG_SUFFIX
-      use_build_push_action: true
+
+      use_build_push_action: false
       use_custom_release: true
       setup_aws_creds: true
       run_nix_unit_tests: false
