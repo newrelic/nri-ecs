@@ -33,7 +33,7 @@ jobs:
         make compile-multiarch RELEASE_VERSION=$VERSION
 
         docker buildx build --push --platform=$DOCKER_PLATFORMS \
-          -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
+          -t $DOCKER_IMAGE_NAME:$VERSION \
           .
         
         # Only push latest tag for full releases, not prereleases
