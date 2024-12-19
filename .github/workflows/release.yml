@@ -41,3 +41,5 @@ jobs:
       docker_username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
       docker_password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
       bot_token: ${{ secrets.COREINT_BOT_TOKEN }}
+      aws_access_key_id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
+      aws_access_key_secret: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
