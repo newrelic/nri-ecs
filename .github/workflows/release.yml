@@ -7,51 +7,42 @@ on:
 jobs:
   release-pipeline:
     name: Release Pipeline
-    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@v3
+    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@NR-341876-Make-docker-images-pre-release-uniform
     with:
       original_repo_name: "newrelic/nri-ecs"
-      docker_platforms: "linux/amd64,linux/arm64,linux/arm"
       docker_image_name: "newrelic/nri-ecs"
-      s_three_path: "infrastructure_agent"
-      s_three_folder: "s3://nr-downloads-main/infrastructure_agent"
+
+      docker_platforms: "linux/amd64,linux/arm64,linux/arm"
+      
       go_version_file: "go.mod"
-      release_command: |
-        # Version validation as in original workflow
-        echo "${{ github.event.release.tag_name }}" | grep -E '^v[0-9.]*[0-9]$'
+      bucket_url: "s3://nr-downloads-main/infrastructure_agent"
+      setup_aws_creds: true
+
+      release_command_sh: |
         
-        # Extract version from tag name
-        VERSION="${{ github.event.release.tag_name }}"
+        # Build the integration
+        make compile-multiarch RELEASE_VERSION=$VERSION
         
-        # Set S3 base folder with /test for pre-releases
+        # Append /test to S3 base folder for pre-releases
         if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
-          export S3_BASE_FOLDER="s3://nr-downloads-main/infrastructure_agent/test"
-        else
-          export S3_BASE_FOLDER="s3://nr-downloads-main/infrastructure_agent"
+          export S3_BASE_FOLDER="${S3_BASE_FOLDER}/test"
         fi
         
-        # Build and upload steps with correct version handling
-        make compile-multiarch RELEASE_VERSION=$VERSION
-
+        # Pushes the image with / without "-pre" suffix based on if its a pre release 
         docker buildx build --push --platform=$DOCKER_PLATFORMS \
-          -t $DOCKER_IMAGE_NAME:$VERSION \
+          -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
           .
         
-        # Only push latest tag for full releases, not prereleases
+        # Push latest tag if its a release
         if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
           docker buildx build --push --platform=$DOCKER_PLATFORMS \
             -t $DOCKER_IMAGE_NAME:latest \
             .
         fi
         
-        # RELEASE_VERSION stays without suffix, only NRI_ECS_IMAGE_TAG gets the suffix
-        make upload_manifests RELEASE_VERSION=$VERSION NRI_ECS_IMAGE_TAG=$VERSION$TAG_SUFFIX
+        # Upload configuration files
+        make upload_manifests RELEASE_VERSION=$VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
 
-      use_build_push_action: false
-      use_custom_release: true
-      setup_aws_creds: true
-      run_nix_unit_tests: false
-      run_windows_unit_tests: false
-      run_integration_tests: false
     secrets:
       docker_username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
       docker_password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
