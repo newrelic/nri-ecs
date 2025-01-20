@@ -4,110 +4,44 @@ on:
   release:
     types: [prereleased, released]
 
-env:
-  ORIGINAL_REPO_NAME: "newrelic/nri-ecs"
-
 jobs:
-  release-image-manifest:
-    name: Release image and upload manifests
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_IMAGE_NAME: newrelic/nri-ecs
-      DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/arm" # Must be consistent with the matrix make compile-multiarch.
-      S3_BASE_FOLDER: s3://nr-downloads-main/infrastructure_agent
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+  release-pipeline:
+    name: Release Pipeline
+    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@v3
+    with:
+      original_repo_name: "newrelic/nri-ecs"
+      docker_image_name: "newrelic/nri-ecs"
+      
+      setup_aws_creds: true
 
-      - name: Generate version from tag
-        run: |
-          echo "${{ github.event.release.tag_name }}" | grep -E '^v[0-9.]*[0-9]$'
-          NRI_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
-          echo "NRI_VERSION=$NRI_VERSION" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE_TAG=$NRI_VERSION" >> $GITHUB_ENV
-
-      - name: Build integration
-        run: |
-          make compile-multiarch RELEASE_VERSION=$NRI_VERSION
-
-      - if: ${{ github.event.release.prerelease }}
-        run: |
-          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}-pre" >> $GITHUB_ENV
-
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
-          password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        run: |
-          docker buildx build --push --platform=$DOCKER_PLATFORMS \
-            -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
-            .
-
-      - name: Push :latest image
-        if: ${{ ! github.event.release.prerelease }}
-        run: |
+      release_command_sh: |
+        
+        # Build the integration
+        make compile-multiarch RELEASE_VERSION=$VERSION
+        
+        # Append /test to S3 base folder for pre-releases
+        if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
+          export S3_BASE_FOLDER="${S3_BASE_FOLDER}/test"
+        fi
+        
+        # Pushes the image with / without "-pre" suffix based on if its a pre release 
+        docker buildx build --push --platform=$DOCKER_PLATFORMS \
+          -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
+          .
+        
+        # Push latest tag if its a release
+        if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
           docker buildx build --push --platform=$DOCKER_PLATFORMS \
             -t $DOCKER_IMAGE_NAME:latest \
             .
+        fi
+        
+        # Upload configuration files
+        make upload_manifests RELEASE_VERSION=$VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
 
-      - if: ${{ github.event.release.prerelease }}
-        run: |
-          echo "S3_BASE_FOLDER=$S3_BASE_FOLDER/test" >> $GITHUB_ENV
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Upload configuration files to https://download.newrelic.com
-        run: |
-          make upload_manifests RELEASE_VERSION=$NRI_VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
-
-      - if: ${{ github.event.release.prerelease }}
-        uses: actions/checkout@v4
-      - if: ${{ github.event.release.prerelease }}
-        name: Update title for successful pre-release
-        env:
-          GH_TOKEN: "${{ secrets.COREINT_BOT_TOKEN }}"
-        run: |
-          gh release edit ${{ github.event.release.tag_name  }} --title "${{ github.event.release.tag_name  }}"
-
-
-  notify-failure:
-    if: ${{ always() && failure() }}
-    needs: [release-image-manifest]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify failure via Slack
-        uses: archive/github-actions-slack@master
-        with:
-          slack-bot-user-oauth-access-token: ${{ secrets.COREINT_SLACK_TOKEN }}
-          slack-channel: ${{ secrets.COREINT_SLACK_CHANNEL }}
-          slack-text: "❌ `${{ env.ORIGINAL_REPO_NAME }}`: [image release failed](${{ github.server_url }}/${{ env.ORIGINAL_REPO_NAME }}/actions/runs/${{ github.run_id }})."
-
-  update-title-on-failure:
-    if: ${{ always() && failure() }}
-    needs: [release-image-manifest]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - if: ${{ github.event.release.prerelease }}
-        name: Reflect failure in pre-release title
-        env:
-          GH_TOKEN: "${{ secrets.COREINT_BOT_TOKEN }}"
-        run: |
-          gh release edit ${{ github.event.release.tag_name  }} --title "${{ github.event.release.tag_name }} (pre-release-failure)"
-      - if: ${{ ! github.event.release.prerelease }}
-        name: Reflect failure in release title
-        env:
-          GH_TOKEN: "${{ secrets.COREINT_BOT_TOKEN }}"
-        run: |
-          gh release edit ${{ github.event.release.tag_name  }} --title "${{ github.event.release.tag_name }} (release-failure)"
+    secrets:
+      docker_username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
+      docker_password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
+      bot_token: ${{ secrets.COREINT_BOT_TOKEN }}
+      aws_access_key_id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
+      aws_access_key_secret: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
