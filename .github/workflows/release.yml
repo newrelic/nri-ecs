@@ -7,7 +7,7 @@ on:
 jobs:
   release-pipeline:
     name: Release Pipeline
-    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@NR-341876-Make-docker-images-pre-release-uniform
+    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@v3
     with:
       original_repo_name: "newrelic/nri-ecs"
       docker_image_name: "newrelic/nri-ecs"
