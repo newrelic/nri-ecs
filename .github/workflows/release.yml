@@ -45,3 +45,5 @@ jobs:
       bot_token: ${{ secrets.COREINT_BOT_TOKEN }}
       aws_access_key_id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
       aws_access_key_secret: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
+      slack_channel: ${{ secrets.COREINT_SLACK_CHANNEL }}
+      slack_token: ${{ secrets.COREINT_SLACK_TOKEN }}
