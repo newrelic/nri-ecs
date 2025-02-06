@@ -10,6 +10,11 @@ Unreleased section should follow
 
 ## Unreleased
 
+## v1.12.8 - 2025-02-06
+
+### ⛓️ Dependencies
+- Updated golang patch version to v1.23.6
+
 ## v1.12.7 - 2025-01-30
 
 ### ⛓️ Dependencies
