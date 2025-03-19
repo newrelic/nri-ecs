@@ -28,6 +28,9 @@ S3_BASE_FOLDER ?= s3://nr-downloads-main/infrastructure_agent
 S3_ECS_FOLDER := $(S3_BASE_FOLDER)/integrations/ecs
 S3_CLOUDFORMATION_FOLDER := $(S3_ECS_FOLDER)/cloudformation
 
+GO_VERSION 		?= $(shell grep '^go ' go.mod | awk '{print $$2}')
+BUILDER_IMAGE 	?= "ghcr.io/newrelic/coreint-automation:latest-go$(GO_VERSION)-ubuntu16.04"
+
 all: build
 
 build: clean test compile
