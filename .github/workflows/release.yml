@@ -18,6 +18,8 @@ jobs:
         
         # Build the integration
         make compile-multiarch RELEASE_VERSION=$VERSION
+
+        make ci/prerelease-fips
         
         # Append /test to S3 base folder for pre-releases
         if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
