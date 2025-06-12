@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=newrelic/infrastructure-bundle:3.2.73
+ARG BASE_IMAGE=newrelic/infrastructure-bundle:3.2.74
 
 FROM $BASE_IMAGE AS base
 
