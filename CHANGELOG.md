@@ -10,6 +10,11 @@ Unreleased section should follow
 
 ## Unreleased
 
+## v1.12.19 - 2025-07-03
+
+### ⛓️ Dependencies
+- Updated newrelic/infrastructure-bundle to v3.2.76 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.2.76)
+
 ## v1.12.18 - 2025-06-26
 
 ### ⛓️ Dependencies
