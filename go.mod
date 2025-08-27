@@ -4,7 +4,7 @@ go 1.24.6
 
 require (
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
