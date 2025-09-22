@@ -28,11 +28,23 @@ jobs:
         docker buildx build --push --platform=$DOCKER_PLATFORMS \
           -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
           .
+
+        # Build and push FIPS image with / without "-pre" suffix based on if its a pre release
+        docker buildx build --push --platform=$DOCKER_PLATFORMS \
+          -t newrelic/nri-ecs-fips:$DOCKER_IMAGE_TAG \
+          -f Dockerfile.fips \
+          .
         
         # Push latest tag if its a release
         if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
           docker buildx build --push --platform=$DOCKER_PLATFORMS \
             -t $DOCKER_IMAGE_NAME:latest \
+            .
+
+          # Push latest for FIPS image
+          docker buildx build --push --platform=$DOCKER_PLATFORMS \
+            -t newrelic/nri-ecs-fips:latest \
+            -f Dockerfile.fips \
             .
         fi
         
