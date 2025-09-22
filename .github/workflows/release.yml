@@ -30,7 +30,7 @@ jobs:
           .
 
         # Build and push FIPS image with / without "-pre" suffix based on if its a pre release
-        docker buildx build --push --platform=$DOCKER_PLATFORMS \
+        docker buildx build --push --platform=linux/amd64,linux/arm64 \
           -t newrelic/nri-ecs-fips:$DOCKER_IMAGE_TAG \
           -f Dockerfile.fips \
           .
@@ -42,7 +42,7 @@ jobs:
             .
 
           # Push latest for FIPS image
-          docker buildx build --push --platform=$DOCKER_PLATFORMS \
+          docker buildx build --push --platform=linux/amd64,linux/arm64 \
             -t newrelic/nri-ecs-fips:latest \
             -f Dockerfile.fips \
             .

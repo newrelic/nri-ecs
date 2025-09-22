@@ -10,8 +10,8 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # Add the nri-ecs integration binary to the default folders.
-ADD --chmod=755 bin/nri-ecs-${TARGETOS}-${TARGETARCH} /var/db/newrelic-infra/newrelic-integrations/bin/
-RUN mv /var/db/newrelic-infra/newrelic-integrations/bin/nri-ecs-${TARGETOS}-${TARGETARCH} \
+ADD --chmod=755 bin/nri-ecs-fips-${TARGETOS}-${TARGETARCH} /var/db/newrelic-infra/newrelic-integrations/bin/
+RUN mv /var/db/newrelic-infra/newrelic-integrations/bin/nri-ecs-fips-${TARGETOS}-${TARGETARCH} \
     /var/db/newrelic-infra/newrelic-integrations/bin/nri-ecs
 
 RUN rm /etc/newrelic-infra/integrations.d/docker-config.yml
