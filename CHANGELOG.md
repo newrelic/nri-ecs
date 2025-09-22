@@ -11,7 +11,7 @@ Unreleased section should follow
 ## Unreleased
 
 ### enhancements
-- Added FIPS compliant image
+- Added FIPS compliant image 
 
 ## v1.12.27 - 2025-09-22
 
