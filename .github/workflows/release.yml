@@ -18,7 +18,6 @@ jobs:
         
         # Build the integration
         make compile-multiarch RELEASE_VERSION=$VERSION
-        make compile-multiarch-fips RELEASE_VERSION=$VERSION
         
         # Append /test to S3 base folder for pre-releases
         if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
@@ -29,12 +28,6 @@ jobs:
         docker buildx build --push --platform=$DOCKER_PLATFORMS \
           -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
           .
-
-        # Build and push FIPS image with / without "-pre" suffix based on if its a pre release
-        docker buildx build --push --platform=linux/amd64,linux/arm64 \
-          -t newrelic/nri-ecs-fips:$DOCKER_IMAGE_TAG \
-          -f Dockerfile.fips \
-          .
         
         # Push latest tag if its a release
         if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
@@ -42,16 +35,48 @@ jobs:
             -t $DOCKER_IMAGE_NAME:latest \
             .
 
-          # Push latest for FIPS image
-          docker buildx build --push --platform=linux/amd64,linux/arm64 \
-            -t newrelic/nri-ecs-fips:latest \
-            -f Dockerfile.fips \
-            .
         fi
         
         # Upload configuration files
         make upload_manifests RELEASE_VERSION=$VERSION NRI_ECS_IMAGE_TAG=$DOCKER_IMAGE_TAG
 
+    secrets:
+      docker_username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
+      docker_password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
+      bot_token: ${{ secrets.COREINT_BOT_TOKEN }}
+      aws_access_key_id: ${{ secrets.COREINT_AWS_ACCESS_KEY_ID }}
+      aws_access_key_secret: ${{ secrets.COREINT_AWS_SECRET_ACCESS_KEY }}
+      slack_channel: ${{ secrets.COREINT_SLACK_CHANNEL }}
+      slack_token: ${{ secrets.COREINT_SLACK_TOKEN }}
+
+  fips-release-pipeline:
+    name: Release Pipeline for FIPS compatible image
+    uses: newrelic/coreint-automation/.github/workflows/reusable_image_release.yaml@v3
+    with:
+      original_repo_name: "newrelic/nri-ecs"
+      docker_image_name: "newrelic/nri-ecs-fips"
+      docker_platforms: "linux/amd64,linux/arm64"
+
+      release_command_sh: |
+        
+        # Build the integration
+        make compile-multiarch-fips RELEASE_VERSION=$VERSION
+
+        # Build and push FIPS image with / without "-pre" suffix based on if its a pre release
+        docker buildx build --push --platform=$DOCKER_PLATFORMS \
+          -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG \
+          -f Dockerfile.fips \
+          .
+        
+        # Push latest tag if its a release
+        if [[ "${{ github.event.release.prerelease }}" == "false" ]]; then
+          # Push latest for FIPS image
+          docker buildx build --push --platform=$DOCKER_PLATFORMS \
+            -t $DOCKER_IMAGE_NAME:latest \
+            -f Dockerfile.fips \
+            .
+        fi
+        
     secrets:
       docker_username: ${{ secrets.FSI_DOCKERHUB_USERNAME }}
       docker_password: ${{ secrets.FSI_DOCKERHUB_TOKEN }}
