@@ -8,6 +8,10 @@ RELEASE_STRING := ${RELEASE_VERSION}
 COMMIT ?= $(shell git rev-parse HEAD || echo "unknown")
 LD_FLAGS ?= "-X 'main.integrationVersion=$(RELEASE_VERSION)' -X 'main.gitCommit=$(COMMIT)'"
 
+# FIPS builder image configuration
+GO_VERSION 		?= $(shell grep '^go ' go.mod | awk '{print $$2}')
+BUILDER_IMAGE 	?= "ghcr.io/newrelic/coreint-automation:latest-go$(GO_VERSION)-ubuntu16.04"
+
 NRI_ECS_IMAGE_REPO ?= newrelic/nri-ecs
 NRI_ECS_IMAGE_TAG ?= "dev"
 NRI_ECS_IMAGE := $(NRI_ECS_IMAGE_REPO):$(NRI_ECS_IMAGE_TAG)
@@ -86,6 +90,43 @@ compile-multiarch:
 	$(MAKE) compile GOOS=linux GOARCH=arm64
 	$(MAKE) compile GOOS=linux GOARCH=arm
 
+compile-multiarch-fips:
+	$(MAKE) compile-fips-docker-amd64
+	$(MAKE) compile-fips-docker-arm64
+	@echo "All FIPS binaries compiled."
+
+compile-all-multiarch:
+	$(MAKE) compile-multiarch
+	$(MAKE) compile-multiarch-fips
+
+compile-fips-docker-amd64:
+	@echo "=== $(INTEGRATION) === [ compile-fips-docker-amd64 ]: Building FIPS binary for linux/amd64 using builder image..."
+	docker run --rm \
+		--platform linux/amd64 \
+		-v $(PWD):/src \
+		-w /src \
+		-e GOOS=linux \
+		-e GOARCH=amd64 \
+		-e CGO_ENABLED=1 \
+		-e CC=gcc \
+		-e GOEXPERIMENT=boringcrypto \
+		$(BUILDER_IMAGE) \
+		go build -o bin/$(BINARY_NAME)-fips-linux-amd64 -ldflags $(LD_FLAGS) -tags fips ./cmd
+
+compile-fips-docker-arm64:
+	@echo "=== $(INTEGRATION) === [ compile-fips-docker-arm64 ]: Building FIPS binary for linux/arm64 using builder image..."
+	docker run --rm \
+		--platform linux/amd64 \
+		-v $(PWD):/src \
+		-w /src \
+		-e GOOS=linux \
+		-e GOARCH=arm64 \
+		-e CGO_ENABLED=1 \
+		-e CC=aarch64-linux-gnu-gcc \
+		-e GOEXPERIMENT=boringcrypto \
+		$(BUILDER_IMAGE) \
+		go build -o bin/$(BINARY_NAME)-fips-linux-arm64 -ldflags $(LD_FLAGS) -tags fips ./cmd
+
 ## GOOS and GOARCH are manually set so the output BINARY_NAME includes them as suffixes.
 ## Additionally, DOCKER_BUILDKIT is set since it's needed for Docker to populate TARGETOS and TARGETARCH ARGs.
 ## Here we call $(MAKE) build instead of using a dependency because the latter would, for some reason, prevent
@@ -119,4 +160,4 @@ buildThirdPartyNotice:
 rt-update-changelog:
 	curl "https://raw.githubusercontent.com/newrelic/release-toolkit/v1/contrib/ohi-release-notes/run.sh" | bash -s -- $(filter-out $@,$(MAKECMDGOALS))
 
-.PHONY: all build clean image compile compile-multiarch test buildLicenseNotice
+.PHONY: all build clean image compile compile-multiarch compile-multiarch-fips compile-all-multiarch compile-fips-docker-amd64 compile-fips-docker-arm64 test buildLicenseNotice
