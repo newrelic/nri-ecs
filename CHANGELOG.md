@@ -10,8 +10,10 @@ Unreleased section should follow
 
 ## Unreleased
 
-### enhancements
-- Added FIPS compliant image 
+## v1.13.0 - 2025-09-25
+
+### 🚀 Enhancements
+- Added FIPS compliant image
 
 ## v1.12.27 - 2025-09-22
 
