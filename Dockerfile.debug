@@ -1,6 +1,6 @@
 #### Please note that this dockerfile is not used to release the image,
 #### It is used merely to create a test image to run tests or to be uploaded manually for testing pourpuses
-FROM golang:1.25.7-bookworm AS build
+FROM golang:1.26.0-bookworm AS build
 RUN apk add --no-cache --update git make
 
 WORKDIR /go/src/github.com/newrelic/nri-ecs
