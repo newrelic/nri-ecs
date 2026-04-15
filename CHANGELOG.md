@@ -10,6 +10,9 @@ Unreleased section should follow
 
 ## Unreleased
 
+### security
+- update go to v1.25.9
+
 ## v1.13.10 - 2026-04-02
 
 ### ⛓️ Dependencies
