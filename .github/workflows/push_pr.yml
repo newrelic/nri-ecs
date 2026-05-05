@@ -6,6 +6,10 @@ on:
       - renovate/**
   pull_request:
 
+
+permissions:
+  contents: read
+
 jobs:
   static-analysis:
     name: Run all static analysis checks
