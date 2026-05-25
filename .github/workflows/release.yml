@@ -4,6 +4,10 @@ on:
   release:
     types: [prereleased, released]
 
+
+permissions:
+  contents: read
+
 jobs:
   release-pipeline:
     name: Release Pipeline
