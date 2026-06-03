@@ -10,6 +10,9 @@ Unreleased section should follow
 
 ## Unreleased
 
+### security
+- Updated newrelic/infrastructure-bundle version to 3.3.29
+
 ## v1.14.3 - 2026-05-28
 
 ### ⛓️ Dependencies
