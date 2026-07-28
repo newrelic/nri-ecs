@@ -29,6 +29,19 @@ in the `task.yaml` stack, then customers can do an update on the stack to
 register a new version of the `newrelic-infra` ECS task that uses the newly
 deployed `nri-ecs` container.
 
+## Fargate launch type
+
+`task.yaml` only registers a task compatible with the **EC2** and **EXTERNAL**
+launch types. For **Fargate**, register your own task definition based on
+[`../fargate_sidecar_example.json`](../fargate_sidecar_example.json) instead.
+
+That example's `NRIA_LICENSE_KEY` secret and `executionRoleArn` must be filled
+in with the outputs of the `NewRelicECSTaskExecutionRoleStack` nested stack
+(or the top-level `master.yaml` stack, which forwards them):
+
+* `<NEW_RELIC_LICENSE_KEY_SECRET_ARN>` → `LicenseKeySecretARN` output
+* `<YOUR_TASK_EXECUTION_ROLE>` → `ExecutionRoleARN` output
+
 ## Service creation stack
 
 This is the `service.yaml` stack, it creates the DAEMON service. You have to
