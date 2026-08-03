@@ -44,7 +44,7 @@
         ],
         "secrets": [
           {
-            "valueFrom": "<SYSTEM_MANAGER_LICENSE_PARAMETER_NAME>",
+            "valueFrom": "<NEW_RELIC_LICENSE_KEY_SECRET_ARN>",
             "name": "NRIA_LICENSE_KEY"
           }
         ],

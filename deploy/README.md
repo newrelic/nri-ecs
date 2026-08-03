@@ -42,8 +42,15 @@ The script has a Fargate switch (`-f`) that can  be used to enable the Fargate m
 resources that are required to run Tasks with the sidecar contianer: IAM policies and roles, and the System's Manager
 parameter.
 
-In `sidecar_example.json` there is a task definition that contains an nginx container
-with the Agent & ECS integration as a sidecar.
+In `fargate_sidecar_example.json` there is a task definition that contains a
+sample container with the Agent & ECS integration as a sidecar.
+
+Note: this example's `NRIA_LICENSE_KEY` secret now points at a Secrets Manager
+ARN (`<NEW_RELIC_LICENSE_KEY_SECRET_ARN>`), to match the [CloudFormation
+deployment](cloudformation/README.md#fargate-launch-type). If you're using
+the `-f` installer script instead, its System Manager Parameter Store setup
+will no longer match this placeholder automatically — pass the parameter's
+ARN in manually, or use a Secrets Manager parameter for the license key.
 
 
 ### Compatibility
