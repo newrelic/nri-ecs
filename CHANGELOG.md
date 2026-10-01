@@ -10,6 +10,12 @@ Unreleased section should follow
 
 ## Unreleased
 
+## v1.15.9 - 2026-10-01
+
+### ⛓️ Dependencies
+- Updated golang version to v1.27.1
+- Updated newrelic/infrastructure-bundle to v3.5.0 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.5.0)
+
 ## v1.15.8 - 2026-09-17
 
 ### ⛓️ Dependencies
