@@ -1,6 +1,6 @@
 module github.com/newrelic/nri-ecs
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
