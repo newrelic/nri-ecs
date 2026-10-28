@@ -13,7 +13,7 @@ Unreleased section should follow
 ## v1.15.13 - 2026-10-28
 
 ### ⛓️ Dependencies
-- Updated newrelic/infrastructure-bundle to v3.5.5 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.5.5)
+- Updated newrelic/infrastructure-bundle to v3.5.6 - [Changelog 🔗](https://github.com/newrelic/infrastructure-bundle/releases/tag/v3.5.6)
 
 ## v1.15.12 - 2026-10-22
 
